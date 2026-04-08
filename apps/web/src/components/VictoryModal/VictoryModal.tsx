@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { GamePlayerWithInfo } from '@munchkin/shared';
+import { useTTS } from '@/hooks/useTTS';
 
 interface VictoryModalProps {
   winner: GamePlayerWithInfo;
@@ -8,6 +9,15 @@ interface VictoryModalProps {
 
 export function VictoryModal({ winner, onFinish }: VictoryModalProps) {
   const [finishing, setFinishing] = useState(false);
+  const { speak, isSupported } = useTTS();
+
+  // Narração automática ao montar (Story 6.4)
+  useEffect(() => {
+    if (isSupported) {
+      speak(`${winner.player.name} venceu! Nível ${winner.level}!`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleFinish = async () => {
     setFinishing(true);

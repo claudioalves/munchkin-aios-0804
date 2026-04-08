@@ -57,12 +57,12 @@ export default function Home() {
           Regras (em breve)
         </button>
 
-        <button
-          disabled
-          className="text-parchment-dim font-heading px-6 py-3 rounded-xl text-center text-sm cursor-not-allowed"
+        <Link
+          to="/settings"
+          className="text-parchment-muted font-heading px-6 py-3 rounded-xl text-center text-sm hover:text-parchment transition-colors"
         >
-          Configurações (em breve)
-        </button>
+          Configurações
+        </Link>
       </nav>
 
       {/* Reservado para banner AdSense */}

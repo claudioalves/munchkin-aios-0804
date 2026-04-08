@@ -6,17 +6,27 @@ import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
 import { AppHeader } from '@/components/AppHeader/AppHeader';
 import { HoldButton } from '@/components/HoldButton/HoldButton';
 import { VictoryModal } from '@/components/VictoryModal/VictoryModal';
+import { NarratorButton } from '@/components/NarratorButton/NarratorButton';
 import { useLevelUpdate } from '@/hooks/useLevelUpdate';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useSyncQueue } from '@/hooks/useSyncQueue';
+import { useTTS } from '@/hooks/useTTS';
 
 export default function GamePage() {
   const navigate = useNavigate();
   const { activeGame, gamePlayers, setActiveGame, setGamePlayers, clearGame } = useGameStore();
   const handleLevelChange = useLevelUpdate();
+  const { isSupported, isSpeaking, speak, stop } = useTTS();
 
   useAutoSave();
   useSyncQueue();
+
+  const handleNarrate = () => {
+    if (isSpeaking) { stop(); return; }
+    const sorted = [...gamePlayers].sort((a, b) => b.level - a.level);
+    const text = sorted.map((p) => `${p.player.name} nível ${p.level}`).join('. ');
+    speak(text);
+  };
 
   useEffect(() => {
     if (activeGame) return;
@@ -63,8 +73,15 @@ export default function GamePage() {
         />
       </div>
 
-      <div className="pb-4">
-        <HoldButton onComplete={() => void handleFinish()} />
+      <div className="pb-4 flex items-center gap-3">
+        <div className="flex-1">
+          <HoldButton onComplete={() => void handleFinish()} />
+        </div>
+        <NarratorButton
+          isSupported={isSupported}
+          isSpeaking={isSpeaking}
+          onClick={handleNarrate}
+        />
       </div>
 
       {winner && (
