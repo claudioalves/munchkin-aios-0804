@@ -40,7 +40,153 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_players: {
+        Row: {
+          game_id: string
+          id: string
+          level: number
+          player_id: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          game_id: string
+          id?: string
+          level?: number
+          player_id: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          game_id?: string
+          id?: string
+          level?: number
+          player_id?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          epic_mode: boolean
+          finished_at: string | null
+          id: string
+          max_level: number | null
+          owner_id: string
+          player_order: Json
+          sort_mode: string
+          started_at: string
+          status: string
+          victory_level: number | null
+        }
+        Insert: {
+          epic_mode?: boolean
+          finished_at?: string | null
+          id?: string
+          max_level?: number | null
+          owner_id?: string
+          player_order?: Json
+          sort_mode?: string
+          started_at?: string
+          status?: string
+          victory_level?: number | null
+        }
+        Update: {
+          epic_mode?: boolean
+          finished_at?: string | null
+          id?: string
+          max_level?: number | null
+          owner_id?: string
+          player_order?: Json
+          sort_mode?: string
+          started_at?: string
+          status?: string
+          victory_level?: number | null
+        }
+        Relationships: []
+      }
+      level_snapshots: {
+        Row: {
+          captured_at: string
+          game_id: string
+          id: string
+          level: number
+          player_id: string
+        }
+        Insert: {
+          captured_at?: string
+          game_id: string
+          id?: string
+          level: number
+          player_id: string
+        }
+        Update: {
+          captured_at?: string
+          game_id?: string
+          id?: string
+          level?: number
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "level_snapshots_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "level_snapshots_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          avatar_url: string | null
+          color: string
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_id?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
