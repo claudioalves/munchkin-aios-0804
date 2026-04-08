@@ -1,17 +1,22 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { getActiveGame, finishGame, useGameStore } from '@munchkin/shared';
+import { getActiveGame, finishGame, useGameStore, STORAGE_KEYS } from '@munchkin/shared';
 import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
 import { AppHeader } from '@/components/AppHeader/AppHeader';
 import { HoldButton } from '@/components/HoldButton/HoldButton';
 import { VictoryModal } from '@/components/VictoryModal/VictoryModal';
 import { useLevelUpdate } from '@/hooks/useLevelUpdate';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { useSyncQueue } from '@/hooks/useSyncQueue';
 
 export default function GamePage() {
   const navigate = useNavigate();
   const { activeGame, gamePlayers, setActiveGame, setGamePlayers, clearGame } = useGameStore();
   const handleLevelChange = useLevelUpdate();
+
+  useAutoSave();
+  useSyncQueue();
 
   useEffect(() => {
     if (activeGame) return;
@@ -36,6 +41,7 @@ export default function GamePage() {
 
   const handleFinish = async () => {
     await finishGame(supabase, activeGame.id);
+    localStorage.removeItem(STORAGE_KEYS.SYNC_QUEUE);
     clearGame();
     navigate('/');
   };

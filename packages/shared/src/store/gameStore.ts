@@ -11,6 +11,9 @@ interface GameStoreState {
   gamePlayers: GamePlayerWithInfo[];
   sortMode: SortMode;
 
+  // Persistence
+  lastSavedAt: string | null;
+
   // UI
   isLoading: boolean;
   isSaving: boolean;
@@ -22,6 +25,7 @@ interface GameStoreState {
   setSortMode: (mode: SortMode) => void;
   setLoading: (loading: boolean) => void;
   setSaving: (saving: boolean) => void;
+  setLastSavedAt: (timestamp: string) => void;
   updatePlayerLevel: (gamePlayerId: string, newLevel: number) => void;
   clearGame: () => void;
 }
@@ -44,6 +48,7 @@ export const useGameStore = create<GameStoreState>()(
       activeGame: null,
       gamePlayers: [],
       sortMode: 'level-desc',
+      lastSavedAt: null,
       isLoading: false,
       isSaving: false,
 
@@ -60,6 +65,8 @@ export const useGameStore = create<GameStoreState>()(
 
       setSaving: (saving) => set({ isSaving: saving }),
 
+      setLastSavedAt: (timestamp) => set({ lastSavedAt: timestamp }),
+
       updatePlayerLevel: (gamePlayerId, newLevel) =>
         set((state) => ({
           gamePlayers: state.gamePlayers.map((p) =>
@@ -72,6 +79,7 @@ export const useGameStore = create<GameStoreState>()(
           activeGame: null,
           gamePlayers: [],
           sortMode: 'level-desc',
+          lastSavedAt: null,
         }),
     }),
     {
@@ -83,6 +91,7 @@ export const useGameStore = create<GameStoreState>()(
         activeGame: state.activeGame,
         gamePlayers: state.gamePlayers,
         sortMode: state.sortMode,
+        lastSavedAt: state.lastSavedAt,
       }),
     }
   )

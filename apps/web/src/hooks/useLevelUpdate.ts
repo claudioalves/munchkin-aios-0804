@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { updateLevel, useGameStore } from '@munchkin/shared';
+import { enqueueWrite } from './useSyncQueue';
 
 export function useLevelUpdate() {
   const { activeGame, updatePlayerLevel } = useGameStore();
@@ -13,9 +14,14 @@ export function useLevelUpdate() {
     // Optimistic — instantâneo (< 100ms)
     updatePlayerLevel(gamePlayerId, newLevel);
 
-    // Persist async com rollback
+    // Persist async com rollback ou enqueue se offline
     updateLevel(supabase, gamePlayerId, newLevel).catch(() => {
-      updatePlayerLevel(gamePlayerId, currentLevel);
+      if (!navigator.onLine) {
+        enqueueWrite(gamePlayerId, newLevel);
+      } else {
+        // Online mas falhou: rollback
+        updatePlayerLevel(gamePlayerId, currentLevel);
+      }
     });
   };
 }
