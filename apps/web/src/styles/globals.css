@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* ================================================
+   GOOGLE FONTS
+   ================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+/* ================================================
+   CSS CUSTOM PROPERTIES — Design Tokens
+   ================================================ */
+@theme {
+  /* Cores */
+  --color-surface-base: #0e0c0a;
+  --color-surface-card: #1a1713;
+  --color-surface-elevated: #231f1b;
+  --color-surface-overlay: rgba(14, 12, 10, 0.85);
+
+  --color-brand-gold: #c9943a;
+  --color-brand-gold-light: #e8b44a;
+  --color-brand-gold-dark: #9a6e1f;
+
+  --color-brand-ruby: #b02828;
+  --color-brand-ruby-light: #d63030;
+  --color-brand-ruby-dark: #8a1a1a;
+
+  --color-brand-emerald: #2d7a4a;
+  --color-brand-emerald-light: #3a9a5c;
+  --color-brand-emerald-dark: #1e5a33;
+
+  --color-parchment: #e8d9b0;
+  --color-parchment-muted: #b5a47a;
+  --color-parchment-dim: #7a6a45;
+
+  /* Tipografia */
+  --font-display: 'Cinzel Decorative', serif;
+  --font-heading: 'Cinzel', serif;
+  --font-body: 'Crimson Pro', serif;
+
+  /* Sombras */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.6);
+  --shadow-glow-gold: 0 0 20px rgba(201, 148, 58, 0.4);
+  --shadow-glow-ruby: 0 0 20px rgba(176, 40, 40, 0.4);
+  --shadow-glow-emerald: 0 0 20px rgba(45, 122, 74, 0.4);
+}
+
+/* ================================================
+   KEYFRAMES
+   ================================================ */
+@keyframes level-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes level-dip {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.85); }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gold-pulse {
+  0%, 100% { box-shadow: var(--shadow-glow-gold); }
+  50% { box-shadow: 0 0 40px rgba(201, 148, 58, 0.7); }
+}
+
+@keyframes victory-glow {
+  0%, 100% { box-shadow: var(--shadow-glow-emerald); }
+  50% { box-shadow: 0 0 60px rgba(45, 122, 74, 0.9); }
+}
+
+/* ================================================
+   BASE STYLES
+   ================================================ */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-surface-base);
+  color: var(--color-parchment);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
