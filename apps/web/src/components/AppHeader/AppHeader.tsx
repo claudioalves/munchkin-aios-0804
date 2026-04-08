@@ -2,9 +2,10 @@ interface AppHeaderProps {
   epicMode: boolean;
   playerCount: number;
   onBack: () => void;
+  onChartOpen?: () => void;
 }
 
-export function AppHeader({ epicMode, playerCount, onBack }: AppHeaderProps) {
+export function AppHeader({ epicMode, playerCount, onBack, onChartOpen }: AppHeaderProps) {
   return (
     <header className="flex items-center justify-between py-3 px-1">
       <button
@@ -23,7 +24,14 @@ export function AppHeader({ epicMode, playerCount, onBack }: AppHeaderProps) {
         </p>
       </div>
 
-      <div className="w-14" />
+      <button
+        onClick={onChartOpen}
+        disabled={!onChartOpen}
+        title="Ver gráfico de evolução"
+        className="w-14 text-right font-heading text-parchment-muted hover:text-parchment transition-colors text-lg disabled:opacity-0"
+      >
+        📊
+      </button>
     </header>
   );
 }
