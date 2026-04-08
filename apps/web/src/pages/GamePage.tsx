@@ -1,20 +1,23 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { getActiveGame, useGameStore } from '@munchkin/shared';
+import { getActiveGame, finishGame, useGameStore } from '@munchkin/shared';
+import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
+import { AppHeader } from '@/components/AppHeader/AppHeader';
+import { HoldButton } from '@/components/HoldButton/HoldButton';
+import { VictoryModal } from '@/components/VictoryModal/VictoryModal';
+import { useLevelUpdate } from '@/hooks/useLevelUpdate';
 
 export default function GamePage() {
   const navigate = useNavigate();
-  const { activeGame, gamePlayers, setActiveGame, setGamePlayers } = useGameStore();
+  const { activeGame, gamePlayers, setActiveGame, setGamePlayers, clearGame } = useGameStore();
+  const handleLevelChange = useLevelUpdate();
 
   useEffect(() => {
     if (activeGame) return;
     getActiveGame(supabase)
       .then((game) => {
-        if (!game) {
-          navigate('/');
-          return;
-        }
+        if (!game) { navigate('/'); return; }
         setActiveGame(game);
         setGamePlayers(game.game_players);
       })
@@ -29,16 +32,41 @@ export default function GamePage() {
     );
   }
 
+  const winner = gamePlayers.find((p) => p.level >= activeGame.victory_level);
+
+  const handleFinish = async () => {
+    await finishGame(supabase, activeGame.id);
+    clearGame();
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen bg-surface-base p-6 flex flex-col items-center justify-center gap-4">
-      <h1 className="font-display text-3xl text-brand-gold">Partida em Andamento</h1>
-      <p className="font-body text-parchment-muted text-sm">
-        {activeGame.epic_mode ? 'Modo Épico' : 'Modo Normal'} —{' '}
-        {gamePlayers.length} jogadores
-      </p>
-      <p className="font-body text-parchment-dim text-xs text-center max-w-xs">
-        Tela de partida completa vem no EP-04.
-      </p>
+    <div className="min-h-screen bg-surface-base flex flex-col p-4 gap-4 max-w-2xl mx-auto">
+      <AppHeader
+        epicMode={activeGame.epic_mode}
+        playerCount={gamePlayers.length}
+        onBack={() => navigate('/')}
+      />
+
+      <div className="flex-1">
+        <PlayerGrid
+          gamePlayers={gamePlayers}
+          maxLevel={activeGame.max_level}
+          victoryLevel={activeGame.victory_level}
+          onLevelChange={handleLevelChange}
+        />
+      </div>
+
+      <div className="pb-4">
+        <HoldButton onComplete={() => void handleFinish()} />
+      </div>
+
+      {winner && (
+        <VictoryModal
+          winner={winner}
+          onFinish={handleFinish}
+        />
+      )}
     </div>
   );
 }
