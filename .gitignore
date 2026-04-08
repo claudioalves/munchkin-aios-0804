@@ -27,3 +27,13 @@ Thumbs.db
 .aiox-core/local/
 .claude/settings.local.json
 .aiox/install-log.txt
+
+# Build outputs
+.expo/
+*.tsbuildinfo
+
+# Testing
+coverage/
+
+# Supabase
+supabase/.temp/
