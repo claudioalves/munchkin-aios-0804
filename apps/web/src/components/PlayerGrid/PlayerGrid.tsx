@@ -18,6 +18,7 @@ interface PlayerGridProps {
   maxLevel: number;
   victoryLevel: number;
   sortMode: SortMode;
+  isOwner?: boolean;
   onLevelChange: (gamePlayerId: string, currentLevel: number, delta: 1 | -1) => void;
   onReorder?: (activeId: string, overId: string) => void;
 }
@@ -28,10 +29,11 @@ interface SortableCardProps {
   maxLevel: number;
   isLeader: boolean;
   isVictory: boolean;
+  isOwner: boolean;
   onLevelChange: (gamePlayerId: string, currentLevel: number, delta: 1 | -1) => void;
 }
 
-function SortableCard({ gp, index, maxLevel, isLeader, isVictory, onLevelChange }: SortableCardProps) {
+function SortableCard({ gp, index, maxLevel, isLeader, isVictory, isOwner, onLevelChange }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: gp.id,
   });
@@ -57,6 +59,7 @@ function SortableCard({ gp, index, maxLevel, isLeader, isVictory, onLevelChange 
         maxLevel={maxLevel}
         isLeader={isLeader}
         isVictory={isVictory}
+        isOwner={isOwner}
         onIncrement={(id) => onLevelChange(id, gp.level, 1)}
         onDecrement={(id) => onLevelChange(id, gp.level, -1)}
       />
@@ -69,6 +72,7 @@ export function PlayerGrid({
   maxLevel,
   victoryLevel,
   sortMode,
+  isOwner = true,
   onLevelChange,
   onReorder,
 }: PlayerGridProps) {
@@ -77,7 +81,7 @@ export function PlayerGrid({
   const activePlayer = activeId ? gamePlayers.find((p) => p.id === activeId) : null;
 
   const pointerSensor = useSensor(PointerSensor, {
-    activationConstraint: { distance: 8 },
+    activationConstraint: { distance: isOwner ? 8 : 999999 },
   });
   const keyboardSensor = useSensor(KeyboardSensor, {
     coordinateGetter: sortableKeyboardCoordinates,
@@ -116,6 +120,7 @@ export function PlayerGrid({
               maxLevel={maxLevel}
               isLeader={isLeader}
               isVictory={isVictory}
+              isOwner={isOwner}
               onLevelChange={onLevelChange}
             />
           );
@@ -135,6 +140,7 @@ export function PlayerGrid({
               maxLevel={maxLevel}
               isLeader={isLeader}
               isVictory={isVictory}
+              isOwner={isOwner}
               onIncrement={(id) => onLevelChange(id, gp.level, 1)}
               onDecrement={(id) => onLevelChange(id, gp.level, -1)}
             />

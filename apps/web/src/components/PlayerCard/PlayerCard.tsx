@@ -8,6 +8,7 @@ interface PlayerCardProps {
   maxLevel: number;
   isLeader: boolean;
   isVictory: boolean;
+  isOwner?: boolean;
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
 }
@@ -20,6 +21,7 @@ export function PlayerCard({
   maxLevel,
   isLeader,
   isVictory,
+  isOwner = true,
   onIncrement,
   onDecrement,
 }: PlayerCardProps) {
@@ -64,13 +66,13 @@ export function PlayerCard({
       <div className="flex gap-2 w-full">
         <LevelButton
           variant="decrement"
-          disabled={isVictory || level <= 1}
+          disabled={!isOwner || isVictory || level <= 1}
           onClick={() => onDecrement(gamePlayerId)}
           aria-label={`Diminuir nível de ${name}`}
         />
         <LevelButton
           variant="increment"
-          disabled={isVictory || level >= maxLevel}
+          disabled={!isOwner || isVictory || level >= maxLevel}
           onClick={() => onIncrement(gamePlayerId)}
           aria-label={`Aumentar nível de ${name}`}
         />

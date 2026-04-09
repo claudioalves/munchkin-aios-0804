@@ -22,6 +22,7 @@ import { useAutoSave } from '@/hooks/useAutoSave';
 import { useSyncQueue } from '@/hooks/useSyncQueue';
 import { useTTS } from '@/hooks/useTTS';
 import { useSnapshots } from '@/hooks/useSnapshots';
+import { useRealtimeGame } from '@/hooks/useRealtimeGame';
 
 function shuffleIds(ids: string[]): string[] {
   const arr = [...ids];
@@ -37,6 +38,7 @@ function shuffleIds(ids: string[]): string[] {
 export default function GamePage() {
   const navigate = useNavigate();
   const {
+    userId,
     activeGame,
     gamePlayers,
     sortMode,
@@ -46,6 +48,8 @@ export default function GamePage() {
     setSortMode,
     clearGame,
   } = useGameStore();
+  const isOwner = !!userId && !!activeGame && userId === activeGame.owner_id;
+  useRealtimeGame(supabase, activeGame?.id ?? null);
   const handleLevelChange = useLevelUpdate();
   const { isSupported, isSpeaking, speak, stop } = useTTS();
   const [isChartOpen, setIsChartOpen] = useState(false);
@@ -138,6 +142,13 @@ export default function GamePage() {
         onChartOpen={() => setIsChartOpen(true)}
       />
 
+      {!isOwner && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-card border border-brand-gold/30 text-parchment-muted text-xs font-heading tracking-wide">
+          <span>👁</span>
+          <span>Modo espectador — apenas visualizando</span>
+        </div>
+      )}
+
       <SortDropdown sortMode={sortMode} onSortChange={setSortMode} />
 
       <div className="flex-1">
@@ -146,15 +157,18 @@ export default function GamePage() {
           maxLevel={activeGame.max_level}
           victoryLevel={activeGame.victory_level}
           sortMode={sortMode}
+          isOwner={isOwner}
           onLevelChange={handleLevelChange}
           onReorder={handleReorder}
         />
       </div>
 
       <div className="pb-4 flex items-center gap-3">
+        {isOwner && (
         <div className="flex-1">
           <HoldButton onComplete={() => void handleFinish()} />
         </div>
+        )}
         <NarratorButton
           isSupported={isSupported}
           isSpeaking={isSpeaking}

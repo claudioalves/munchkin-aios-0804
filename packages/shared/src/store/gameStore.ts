@@ -19,7 +19,7 @@ interface GameStoreState {
   isSaving: boolean;
 
   // Actions
-  setUserId: (id: string) => void;
+  setUserId: (id: string | null) => void;
   setActiveGame: (game: Game | null) => void;
   setGamePlayers: (players: GamePlayerWithInfo[]) => void;
   setGamePlayersOrder: (orderedIds: string[]) => void;
