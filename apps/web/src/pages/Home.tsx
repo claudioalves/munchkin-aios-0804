@@ -8,7 +8,7 @@ export default function Home() {
   // undefined = carregando, null = sem jogo ativo, objeto = jogo ativo
   const [activeGame, setActiveGame] = useState<GameWithPlayers | null | undefined>(undefined);
   const navigate = useNavigate();
-  const { userId, setUserId, clearGame } = useGameStore();
+  const { userId, setUserId } = useGameStore();
 
   // Verificar sessão ao montar
   useEffect(() => {
