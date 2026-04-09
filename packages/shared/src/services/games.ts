@@ -50,3 +50,15 @@ export async function finishGame(
   const { error } = await supabase.from('games').delete().eq('id', gameId);
   if (error) throw new Error(`Failed to finish game: ${error.message}`);
 }
+
+export async function updateGameOrder(
+  supabase: SupabaseClient<Database>,
+  gameId: string,
+  playerOrder: string[],
+): Promise<void> {
+  const { error } = await supabase
+    .from('games')
+    .update({ player_order: playerOrder })
+    .eq('id', gameId);
+  if (error) throw new Error(`Failed to update game order: ${error.message}`);
+}

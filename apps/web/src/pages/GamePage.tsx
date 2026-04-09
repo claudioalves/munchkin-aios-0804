@@ -1,25 +1,55 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { arrayMove } from '@dnd-kit/sortable';
 import { supabase } from '@/lib/supabase';
-import { getActiveGame, finishGame, useGameStore, STORAGE_KEYS, captureSnapshot } from '@munchkin/shared';
+import {
+  getActiveGame,
+  finishGame,
+  updateGameOrder,
+  useGameStore,
+  STORAGE_KEYS,
+  captureSnapshot,
+} from '@munchkin/shared';
 import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
 import { AppHeader } from '@/components/AppHeader/AppHeader';
 import { HoldButton } from '@/components/HoldButton/HoldButton';
 import { VictoryModal } from '@/components/VictoryModal/VictoryModal';
 import { NarratorButton } from '@/components/NarratorButton/NarratorButton';
 import { ProgressChart } from '@/components/ProgressChart/ProgressChart';
+import { SortDropdown } from '@/components/SortDropdown/SortDropdown';
 import { useLevelUpdate } from '@/hooks/useLevelUpdate';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useSyncQueue } from '@/hooks/useSyncQueue';
 import { useTTS } from '@/hooks/useTTS';
 import { useSnapshots } from '@/hooks/useSnapshots';
 
+function shuffleIds(ids: string[]): string[] {
+  const arr = [...ids];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = arr[i] as string;
+    arr[i] = arr[j] as string;
+    arr[j] = tmp;
+  }
+  return arr;
+}
+
 export default function GamePage() {
   const navigate = useNavigate();
-  const { activeGame, gamePlayers, setActiveGame, setGamePlayers, clearGame } = useGameStore();
+  const {
+    activeGame,
+    gamePlayers,
+    sortMode,
+    setActiveGame,
+    setGamePlayers,
+    setGamePlayersOrder,
+    setSortMode,
+    clearGame,
+  } = useGameStore();
   const handleLevelChange = useLevelUpdate();
   const { isSupported, isSpeaking, speak, stop } = useTTS();
   const [isChartOpen, setIsChartOpen] = useState(false);
+  const [randomOrder, setRandomOrder] = useState<string[]>([]);
   const { snapshots } = useSnapshots(activeGame?.id);
   const initialSnapshotDone = useRef(false);
 
@@ -45,6 +75,14 @@ export default function GamePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGame?.id]);
 
+  // Embaralhar quando sortMode muda para 'random' (Story 8.3)
+  useEffect(() => {
+    if (sortMode === 'random' && gamePlayers.length > 0) {
+      setRandomOrder(shuffleIds(gamePlayers.map((p) => p.id)));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortMode]);
+
   if (!activeGame) {
     return (
       <div className="min-h-screen bg-surface-base flex items-center justify-center">
@@ -52,6 +90,19 @@ export default function GamePage() {
       </div>
     );
   }
+
+  // Compute displayed order based on sortMode (Story 8.3)
+  const displayedPlayers = (() => {
+    if (sortMode === 'level-desc') {
+      return [...gamePlayers].sort((a, b) => b.level - a.level);
+    }
+    if (sortMode === 'random' && randomOrder.length > 0) {
+      return randomOrder
+        .map((id) => gamePlayers.find((p) => p.id === id))
+        .filter((p): p is (typeof gamePlayers)[0] => p !== undefined);
+    }
+    return gamePlayers;
+  })();
 
   const winner = gamePlayers.find((p) => p.level >= activeGame.victory_level);
 
@@ -69,6 +120,15 @@ export default function GamePage() {
     speak(text);
   };
 
+  const handleReorder = (activeId: string, overId: string) => {
+    const oldIndex = gamePlayers.findIndex((p) => p.id === activeId);
+    const newIndex = gamePlayers.findIndex((p) => p.id === overId);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const newOrder = arrayMove(gamePlayers, oldIndex, newIndex);
+    setGamePlayersOrder(newOrder.map((p) => p.id));
+    void updateGameOrder(supabase, activeGame.id, newOrder.map((p) => p.id));
+  };
+
   return (
     <div className="min-h-screen bg-surface-base flex flex-col p-4 gap-4 max-w-2xl mx-auto">
       <AppHeader
@@ -78,12 +138,16 @@ export default function GamePage() {
         onChartOpen={() => setIsChartOpen(true)}
       />
 
+      <SortDropdown sortMode={sortMode} onSortChange={setSortMode} />
+
       <div className="flex-1">
         <PlayerGrid
-          gamePlayers={gamePlayers}
+          gamePlayers={displayedPlayers}
           maxLevel={activeGame.max_level}
           victoryLevel={activeGame.victory_level}
+          sortMode={sortMode}
           onLevelChange={handleLevelChange}
+          onReorder={handleReorder}
         />
       </div>
 

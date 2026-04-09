@@ -22,6 +22,7 @@ interface GameStoreState {
   setUserId: (id: string) => void;
   setActiveGame: (game: Game | null) => void;
   setGamePlayers: (players: GamePlayerWithInfo[]) => void;
+  setGamePlayersOrder: (orderedIds: string[]) => void;
   setSortMode: (mode: SortMode) => void;
   setLoading: (loading: boolean) => void;
   setSaving: (saving: boolean) => void;
@@ -58,6 +59,13 @@ export const useGameStore = create<GameStoreState>()(
       setActiveGame: (game) => set({ activeGame: game }),
 
       setGamePlayers: (players) => set({ gamePlayers: players }),
+
+      setGamePlayersOrder: (orderedIds) =>
+        set((state) => ({
+          gamePlayers: orderedIds
+            .map((id) => state.gamePlayers.find((p) => p.id === id))
+            .filter((p): p is GamePlayerWithInfo => p !== undefined),
+        })),
 
       setSortMode: (mode) => set({ sortMode: mode }),
 
