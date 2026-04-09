@@ -33,3 +33,24 @@ export async function deletePlayer(
   const { error } = await supabase.from('players').delete().eq('id', id);
   if (error) throw new Error(`Failed to delete player: ${error.message}`);
 }
+
+export async function updatePlayer(
+  supabase: SupabaseClient<Database>,
+  id: string,
+  updates: { name?: string; color?: string; avatar_url?: string | null },
+): Promise<Player> {
+  const payload: Database['public']['Tables']['players']['Update'] = {};
+  if (updates.name !== undefined) payload.name = updates.name.trim();
+  if (updates.color !== undefined) payload.color = updates.color;
+  if (updates.avatar_url !== undefined) payload.avatar_url = updates.avatar_url;
+
+  const { data, error } = await supabase
+    .from('players')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to update player: ${error.message}`);
+  if (!data) throw new Error('Player update returned no data');
+  return data;
+}

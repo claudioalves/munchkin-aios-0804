@@ -3,12 +3,12 @@
 // ================================================
 
 export const AVATAR_COLORS = [
-  '#c9943a', // gold
-  '#b02828', // ruby
-  '#2d7a4a', // emerald
-  '#2855a0', // sapphire
-  '#7a2d9a', // amethyst
-  '#9a5a1a', // bronze
+  // Quentes
+  '#c9943a', '#b02828', '#e85d04', '#f48c06', '#dc2f02', '#9d0208',
+  // Frias
+  '#2855a0', '#1d3557', '#2d7a4a', '#1b4332', '#7a2d9a', '#3a0ca3',
+  // Neutras
+  '#9a5a1a', '#6b4226', '#4a4e69', '#22223b', '#606c38', '#283618',
 ] as const;
 
 export const LEVEL_LIMITS = {

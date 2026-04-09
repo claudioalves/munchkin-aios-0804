@@ -42,7 +42,12 @@ export default function NewGameConfigPage() {
       setGamePlayers(game.game_players);
       navigate('/game');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao criar partida');
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.includes('idx_games_active_owner') || msg.includes('duplicate key')) {
+        setError('Você já tem uma partida em andamento. Encerre-a antes de criar uma nova.');
+      } else {
+        setError(msg || 'Erro ao criar partida');
+      }
       setCreating(false);
     }
   };
@@ -83,8 +88,8 @@ export default function NewGameConfigPage() {
             }`}
           >
             <span
-              className={`absolute top-1 w-4 h-4 rounded-full bg-parchment transition-transform ${
-                epicMode ? 'translate-x-7' : 'translate-x-1'
+              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-200 ${
+                epicMode ? 'left-6' : 'left-0.5'
               }`}
             />
           </button>

@@ -3,9 +3,10 @@ import type { Player } from '@munchkin/shared';
 interface PlayerListItemProps {
   player: Player;
   onDelete?: (id: string) => void;
+  onEdit?: () => void;
 }
 
-export function PlayerListItem({ player, onDelete }: PlayerListItemProps) {
+export function PlayerListItem({ player, onDelete, onEdit }: PlayerListItemProps) {
   return (
     <li className="flex items-center gap-3 bg-surface-card rounded-xl px-4 py-3">
       <div
@@ -17,6 +18,15 @@ export function PlayerListItem({ player, onDelete }: PlayerListItemProps) {
       <span className="font-body text-parchment text-lg flex-1 truncate">
         {player.name}
       </span>
+      {onEdit && (
+        <button
+          onClick={onEdit}
+          className="w-8 h-8 flex items-center justify-center text-parchment-dim hover:text-brand-gold transition-colors rounded-lg hover:bg-surface-elevated"
+          aria-label={`Editar ${player.name}`}
+        >
+          ✏️
+        </button>
+      )}
       {onDelete && (
         <button
           onClick={() => onDelete(player.id)}
