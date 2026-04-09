@@ -28,9 +28,13 @@ export default function SpectatePage() {
 
     async function load() {
       try {
-        // Garante sessão anônima — espectador não precisa de conta
-        const user = await ensureAnonymousSession(supabase);
-        setUserId(user.id);
+        // Tenta sessão anônima para habilitar realtime — não bloqueia se falhar
+        try {
+          const user = await ensureAnonymousSession(supabase);
+          setUserId(user.id);
+        } catch {
+          // Sessão anônima indisponível — continua sem ela (read-only via anon key)
+        }
 
         const data = await getGameById(supabase, gameId!);
         if (!data) { setError('Partida não encontrada ou já encerrada.'); return; }
@@ -40,8 +44,8 @@ export default function SpectatePage() {
         setPlayers(gps);
         // Coloca no store para o hook realtime atualizar
         useGameStore.setState({ gamePlayers: gps });
-      } catch {
-        setError('Falha ao carregar a partida.');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Falha ao carregar a partida.');
       } finally {
         setIsLoading(false);
       }
