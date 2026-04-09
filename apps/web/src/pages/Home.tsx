@@ -11,7 +11,7 @@ export default function Home() {
   const [activeGame, setActiveGame] = useState<GameWithPlayers | null | undefined>(undefined);
   const [showLangModal, setShowLangModal] = useState(false);
   const navigate = useNavigate();
-  const { userId, setUserId, clearGame } = useGameStore();
+  const { userId, setUserId } = useGameStore();
   const { t, isLanguageSet } = useLang();
 
   // Verificar sessão ao montar
@@ -39,9 +39,8 @@ export default function Home() {
     try {
       await signOut(supabase);
     } catch {
-      // ignora erros de logout — limpa estado de qualquer forma
+      // ignora erros de logout
     }
-    clearGame();
     setUserId(null);
     void navigate('/auth');
   }

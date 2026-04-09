@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { createGame, useGameStore } from '@munchkin/shared';
+import { useLang } from '@/i18n/LanguageContext';
 
 function StepIndicator({ step: _step }: { step: 1 | 2 }) {
   return (
@@ -25,6 +26,7 @@ export default function NewGameConfigPage() {
   const selectedIds: string[] = location.state?.selectedIds ?? [];
   const { setActiveGame, setGamePlayers } = useGameStore();
 
+  const { t } = useLang();
   const [epicMode, setEpicMode] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export default function NewGameConfigPage() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
       if (msg.includes('idx_games_active_owner') || msg.includes('duplicate key')) {
-        setError('Você já tem uma partida em andamento. Encerre-a antes de criar uma nova.');
+        setError(t('newGame.duplicateGame'));
       } else {
         setError(msg || 'Erro ao criar partida');
       }
@@ -62,17 +64,17 @@ export default function NewGameConfigPage() {
           >
             ← Voltar
           </button>
-          <h1 className="font-heading text-parchment text-xl flex-1">Novo Jogo</h1>
+          <h1 className="font-heading text-parchment text-xl flex-1">{t('newGame.title')}</h1>
         </div>
         <StepIndicator step={2} />
       </header>
 
       <section className="bg-surface-card rounded-xl p-6 space-y-5">
-        <h2 className="font-heading text-parchment text-base">Configuração</h2>
+        <h2 className="font-heading text-parchment text-base">{t('newGame.config')}</h2>
 
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-1">
-            <p className="font-heading text-parchment text-sm">Modo Épico</p>
+            <p className="font-heading text-parchment text-sm">{t('game.epic')}</p>
             <p className="font-body text-parchment-dim text-xs">
               Nível máximo:{' '}
               <strong className="text-parchment">{maxLevel}</strong>
@@ -113,7 +115,7 @@ export default function NewGameConfigPage() {
         disabled={creating || selectedIds.length < 2}
         className="w-full bg-brand-gold text-surface-base font-heading font-semibold px-6 py-4 rounded-xl hover:bg-brand-gold-light transition-colors shadow-glow-gold text-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
       >
-        {creating ? 'Criando partida...' : 'Iniciar Jogo ⚔'}
+        {creating ? t('newGame.creating') : t('newGame.start')}
       </button>
     </div>
   );

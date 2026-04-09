@@ -2,12 +2,14 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useGameStore, signInWithEmail, signUpWithEmail, signInWithGoogle } from '@munchkin/shared';
+import { useLang } from '@/i18n/LanguageContext';
 
 type Mode = 'login' | 'signup';
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const { setUserId } = useGameStore();
+  const { t } = useLang();
 
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
@@ -62,9 +64,9 @@ export default function AuthPage() {
     <div className="min-h-screen bg-surface-base flex items-center justify-center p-6">
       <div className="w-full max-w-sm bg-surface-card border border-brand-gold rounded-2xl p-8 space-y-6">
         <header className="text-center space-y-1">
-          <h1 className="font-display text-4xl text-brand-gold">Munchkin</h1>
+          <h1 className="font-display text-4xl text-brand-gold">{t('auth.title')}</h1>
           <p className="font-heading text-parchment-muted tracking-widest text-xs uppercase">
-            Level Tracker
+            {t('auth.subtitle')}
           </p>
         </header>
 
@@ -79,7 +81,7 @@ export default function AuthPage() {
                 : 'bg-transparent text-parchment-muted hover:text-parchment'
             }`}
           >
-            Entrar
+            {t('auth.login')}
           </button>
           <button
             type="button"
@@ -90,7 +92,7 @@ export default function AuthPage() {
                 : 'bg-transparent text-parchment-muted hover:text-parchment'
             }`}
           >
-            Criar conta
+            {t('auth.signup')}
           </button>
         </div>
 
@@ -107,12 +109,12 @@ export default function AuthPage() {
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
             <path fill="none" d="M0 0h48v48H0z"/>
           </svg>
-          Entrar com Google
+          {t('auth.google')}
         </button>
 
         <div className="flex items-center gap-3 my-2">
           <div className="flex-1 h-px bg-[--color-brand-border]" />
-          <span className="text-xs text-[--color-brand-muted]">ou</span>
+          <span className="text-xs text-[--color-brand-muted]">{t('auth.or')}</span>
           <div className="flex-1 h-px bg-[--color-brand-border]" />
         </div>
 
@@ -122,7 +124,7 @@ export default function AuthPage() {
               htmlFor="email"
               className="block font-heading text-xs text-parchment-muted uppercase tracking-wider"
             >
-              Email
+              {t('auth.email')}
             </label>
             <input
               id="email"
@@ -141,7 +143,7 @@ export default function AuthPage() {
               htmlFor="password"
               className="block font-heading text-xs text-parchment-muted uppercase tracking-wider"
             >
-              Senha
+              {t('auth.password')}
             </label>
             <input
               id="password"
@@ -167,10 +169,10 @@ export default function AuthPage() {
             className="w-full bg-brand-gold text-surface-base font-heading font-semibold py-3 rounded-xl hover:bg-brand-gold-light transition-colors shadow-glow-gold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading
-              ? 'Aguarde...'
+              ? t('auth.loading')
               : mode === 'login'
-                ? 'Entrar'
-                : 'Criar conta'}
+                ? t('auth.login')
+                : t('auth.signup')}
           </button>
         </form>
       </div>
