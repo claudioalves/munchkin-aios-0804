@@ -1,8 +1,7 @@
 {
   "buildCommand": "npm run build --workspace=apps/web",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "npm ci",
-  "framework": "vite",
+  "installCommand": "npm install --ignore-scripts",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

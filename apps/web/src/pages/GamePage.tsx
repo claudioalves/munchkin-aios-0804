@@ -23,6 +23,7 @@ import { useSyncQueue } from '@/hooks/useSyncQueue';
 import { useTTS } from '@/hooks/useTTS';
 import { useSnapshots } from '@/hooks/useSnapshots';
 import { useRealtimeGame } from '@/hooks/useRealtimeGame';
+import { ShareModal } from '@/components/ShareModal/ShareModal';
 
 function shuffleIds(ids: string[]): string[] {
   const arr = [...ids];
@@ -53,6 +54,7 @@ export default function GamePage() {
   const handleLevelChange = useLevelUpdate();
   const { isSupported, isSpeaking, speak, stop } = useTTS();
   const [isChartOpen, setIsChartOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [randomOrder, setRandomOrder] = useState<string[]>([]);
   const { snapshots } = useSnapshots(activeGame?.id);
   const initialSnapshotDone = useRef(false);
@@ -140,6 +142,7 @@ export default function GamePage() {
         playerCount={gamePlayers.length}
         onBack={() => navigate('/')}
         onChartOpen={() => setIsChartOpen(true)}
+        onShareOpen={() => setIsShareOpen(true)}
       />
 
       {!isOwner && (
@@ -181,6 +184,10 @@ export default function GamePage() {
           winner={winner}
           onFinish={handleFinish}
         />
+      )}
+
+      {isShareOpen && (
+        <ShareModal gameId={activeGame.id} onClose={() => setIsShareOpen(false)} />
       )}
 
       {isChartOpen && (

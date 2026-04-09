@@ -3,9 +3,10 @@ interface AppHeaderProps {
   playerCount: number;
   onBack: () => void;
   onChartOpen?: () => void;
+  onShareOpen?: () => void;
 }
 
-export function AppHeader({ epicMode, playerCount, onBack, onChartOpen }: AppHeaderProps) {
+export function AppHeader({ epicMode, playerCount, onBack, onChartOpen, onShareOpen }: AppHeaderProps) {
   return (
     <header className="flex items-center justify-between py-3 px-1">
       <button
@@ -24,14 +25,25 @@ export function AppHeader({ epicMode, playerCount, onBack, onChartOpen }: AppHea
         </p>
       </div>
 
-      <button
-        onClick={onChartOpen}
-        disabled={!onChartOpen}
-        title="Ver gráfico de evolução"
-        className="w-14 text-right font-heading text-parchment-muted hover:text-parchment transition-colors text-lg disabled:opacity-0"
-      >
-        📊
-      </button>
+      <div className="flex items-center gap-1 w-14 justify-end">
+        {onShareOpen && (
+          <button
+            onClick={onShareOpen}
+            title="Compartilhar partida"
+            className="font-heading text-parchment-muted hover:text-brand-gold transition-colors text-lg"
+          >
+            📤
+          </button>
+        )}
+        <button
+          onClick={onChartOpen}
+          disabled={!onChartOpen}
+          title="Ver gráfico de evolução"
+          className="font-heading text-parchment-muted hover:text-parchment transition-colors text-lg disabled:opacity-0"
+        >
+          📊
+        </button>
+      </div>
     </header>
   );
 }

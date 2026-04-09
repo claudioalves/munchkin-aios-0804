@@ -7,6 +7,8 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  Share,
+  Linking,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Speech from 'expo-speech';
@@ -123,6 +125,27 @@ export function GameScreen({ navigation }: Props) {
     void Speech.speak(`${name} venceu! Nível ${level}!`, { language: 'pt-BR' });
   }
 
+  const webBaseUrl = process.env.EXPO_PUBLIC_WEB_URL ?? 'https://munchkin-tracker.vercel.app';
+  const spectateUrl = activeGame ? `${webBaseUrl}/spectate/${activeGame.id}` : '';
+
+  function handleShareWhatsApp() {
+    const text = encodeURIComponent(
+      `👾 Estou jogando Munchkin! Acompanhe a partida ao vivo:\n${spectateUrl}`
+    );
+    void Linking.openURL(`https://wa.me/?text=${text}`);
+  }
+
+  async function handleShare() {
+    try {
+      await Share.share({
+        message: `👾 Estou jogando Munchkin! Acompanhe a partida ao vivo:\n${spectateUrl}`,
+        url: spectateUrl,
+      });
+    } catch {
+      // ignorar cancelamento
+    }
+  }
+
   async function handleFinishGame() {
     if (!activeGame) return;
     setIsFinishing(true);
@@ -154,19 +177,33 @@ export function GameScreen({ navigation }: Props) {
         <Text style={styles.headerTitle}>
           {activeGame.epic_mode ? '⚔️ Modo Épico' : '⚔️ Partida'}
         </Text>
-        {isOwner && (
+        <View style={styles.headerActions}>
           <TouchableOpacity
-            style={styles.finishBtn}
+            style={styles.shareBtn}
             onPress={() => {
-              Alert.alert('Encerrar Partida', 'Tem certeza?', [
+              Alert.alert('Compartilhar', 'Como deseja compartilhar?', [
                 { text: 'Cancelar', style: 'cancel' },
-                { text: 'Encerrar', style: 'destructive', onPress: handleFinishGame },
+                { text: '📱 WhatsApp', onPress: handleShareWhatsApp },
+                { text: '↗ Outras opções', onPress: () => void handleShare() },
               ]);
             }}
           >
-            <Text style={styles.finishBtnText}>Encerrar</Text>
+            <Text style={styles.shareBtnText}>📤</Text>
           </TouchableOpacity>
-        )}
+          {isOwner && (
+            <TouchableOpacity
+              style={styles.finishBtn}
+              onPress={() => {
+                Alert.alert('Encerrar Partida', 'Tem certeza?', [
+                  { text: 'Cancelar', style: 'cancel' },
+                  { text: 'Encerrar', style: 'destructive', onPress: handleFinishGame },
+                ]);
+              }}
+            >
+              <Text style={styles.finishBtnText}>Encerrar</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {!isOwner && (
@@ -251,6 +288,17 @@ const styles = StyleSheet.create({
     color: colors.brandGold,
     fontSize: fontSize.lg,
     fontWeight: '700',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  shareBtn: {
+    padding: spacing.xs,
+  },
+  shareBtnText: {
+    fontSize: fontSize.lg,
   },
   finishBtn: {
     backgroundColor: colors.brandRed + '22',

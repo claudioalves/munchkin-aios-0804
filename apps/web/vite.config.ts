@@ -54,6 +54,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@munchkin/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
     },
   },
   // @ts-expect-error vitest config merged via triple-slash reference

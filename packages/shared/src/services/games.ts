@@ -51,6 +51,19 @@ export async function finishGame(
   if (error) throw new Error(`Failed to finish game: ${error.message}`);
 }
 
+export async function getGameById(
+  supabase: SupabaseClient<Database>,
+  gameId: string,
+): Promise<GameWithPlayers | null> {
+  const { data, error } = await supabase
+    .from('games')
+    .select(`*, game_players (*, player:players (*))`)
+    .eq('id', gameId)
+    .maybeSingle();
+  if (error) throw new Error(`Failed to fetch game: ${error.message}`);
+  return data as GameWithPlayers | null;
+}
+
 export async function updateGameOrder(
   supabase: SupabaseClient<Database>,
   gameId: string,
