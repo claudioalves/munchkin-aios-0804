@@ -26,7 +26,7 @@ export default function NewGameConfigPage() {
   const selectedIds: string[] = location.state?.selectedIds ?? [];
   const { setActiveGame, setGamePlayers } = useGameStore();
 
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [epicMode, setEpicMode] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function NewGameConfigPage() {
     setCreating(true);
     setError(null);
     try {
-      const game = await createGame(supabase, selectedIds, epicMode);
+      const game = await createGame(supabase, selectedIds, epicMode, lang);
       setActiveGame(game);
       setGamePlayers(game.game_players);
       navigate('/game');

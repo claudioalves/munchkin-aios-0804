@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGameStore, getGameById, ensureAnonymousSession } from '@munchkin/shared';
+import { useGameStore, getGameById } from '@munchkin/shared';
 import type { GamePlayerWithInfo } from '@munchkin/shared';
 import { supabase } from '@/lib/supabase';
 import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
 import { useRealtimeGame } from '@/hooks/useRealtimeGame';
+import { translations } from '@/i18n/translations';
+import type { Language } from '@/i18n/translations';
 
 export default function SpectatePage() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
-  const { setUserId } = useGameStore();
   const [game, setGame] = useState<Awaited<ReturnType<typeof getGameById>>>(null);
   const [players, setPlayers] = useState<GamePlayerWithInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useRealtimeGame(supabase, gameId ?? null);
 
@@ -28,14 +30,6 @@ export default function SpectatePage() {
 
     async function load() {
       try {
-        // Tenta sessão anônima para habilitar realtime — não bloqueia se falhar
-        try {
-          const user = await ensureAnonymousSession(supabase);
-          setUserId(user.id);
-        } catch {
-          // Sessão anônima indisponível — continua sem ela (read-only via anon key)
-        }
-
         const data = await getGameById(supabase, gameId!);
         if (!data) { setError('Partida não encontrada ou já encerrada.'); return; }
 
@@ -54,6 +48,14 @@ export default function SpectatePage() {
     void load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
+
+  // t() local baseado no idioma do criador da partida
+  const spectatorLang = ((game as { lang?: string } | null)?.lang as Language) ?? 'pt-BR';
+  const tSpectate = (key: string): string => {
+    return (translations[spectatorLang] as Record<string, string>)[key]
+      ?? (translations['pt-BR'] as Record<string, string>)[key]
+      ?? key;
+  };
 
   if (isLoading) {
     return (
@@ -102,7 +104,33 @@ export default function SpectatePage() {
       {/* Banner espectador */}
       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-card border border-brand-gold/30 text-parchment-muted text-xs font-heading tracking-wide">
         <span>👁</span>
-        <span>Modo espectador — apenas visualizando</span>
+        <span>{tSpectate('game.spectator')}</span>
+      </div>
+
+      {/* Toggle grid/lista */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setViewMode('grid')}
+          aria-label="Mudar para grade"
+          className={`p-2 rounded-lg font-heading text-xs transition-colors ${
+            viewMode === 'grid'
+              ? 'bg-brand-gold text-surface-base'
+              : 'text-parchment-muted hover:text-parchment bg-surface-card'
+          }`}
+        >
+          ⊞
+        </button>
+        <button
+          onClick={() => setViewMode('list')}
+          aria-label="Mudar para lista"
+          className={`p-2 rounded-lg font-heading text-xs transition-colors ${
+            viewMode === 'list'
+              ? 'bg-brand-gold text-surface-base'
+              : 'text-parchment-muted hover:text-parchment bg-surface-card'
+          }`}
+        >
+          ☰
+        </button>
       </div>
 
       {/* Grid somente leitura */}
@@ -114,6 +142,7 @@ export default function SpectatePage() {
           sortMode="level-desc"
           isOwner={false}
           onLevelChange={() => undefined}
+          viewMode={viewMode}
         />
       </div>
     </div>

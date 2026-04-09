@@ -87,6 +87,7 @@ export type Database = {
           epic_mode: boolean
           finished_at: string | null
           id: string
+          lang: string | null
           max_level: number | null
           owner_id: string
           player_order: Json
@@ -99,6 +100,7 @@ export type Database = {
           epic_mode?: boolean
           finished_at?: string | null
           id?: string
+          lang?: string | null
           max_level?: number | null
           owner_id?: string
           player_order?: Json
@@ -111,6 +113,7 @@ export type Database = {
           epic_mode?: boolean
           finished_at?: string | null
           id?: string
+          lang?: string | null
           max_level?: number | null
           owner_id?: string
           player_order?: Json

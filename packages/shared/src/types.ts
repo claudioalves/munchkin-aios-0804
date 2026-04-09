@@ -22,6 +22,7 @@ export interface Game {
   sort_mode: SortMode;
   started_at: string;
   finished_at: string | null;
+  lang?: string | null;
 }
 
 export interface GamePlayer {

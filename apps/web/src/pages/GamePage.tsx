@@ -43,10 +43,12 @@ export default function GamePage() {
     activeGame,
     gamePlayers,
     sortMode,
+    viewMode,
     setActiveGame,
     setGamePlayers,
     setGamePlayersOrder,
     setSortMode,
+    setViewMode,
     clearGame,
   } = useGameStore();
   const isOwner = !!userId && !!activeGame && userId === activeGame.owner_id;
@@ -152,7 +154,33 @@ export default function GamePage() {
         </div>
       )}
 
-      <SortDropdown sortMode={sortMode} onSortChange={setSortMode} />
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <SortDropdown sortMode={sortMode} onSortChange={setSortMode} />
+        </div>
+        <button
+          onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+          aria-label={viewMode === 'grid' ? 'Mudar para lista' : 'Mudar para grade'}
+          className={`p-2 rounded-lg font-heading text-xs transition-colors ${
+            viewMode === 'grid'
+              ? 'bg-brand-gold text-surface-base'
+              : 'text-parchment-muted hover:text-parchment bg-surface-card'
+          }`}
+        >
+          ⊞
+        </button>
+        <button
+          onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+          aria-label={viewMode === 'list' ? 'Mudar para grade' : 'Mudar para lista'}
+          className={`p-2 rounded-lg font-heading text-xs transition-colors ${
+            viewMode === 'list'
+              ? 'bg-brand-gold text-surface-base'
+              : 'text-parchment-muted hover:text-parchment bg-surface-card'
+          }`}
+        >
+          ☰
+        </button>
+      </div>
 
       <div className="flex-1">
         <PlayerGrid
@@ -163,6 +191,7 @@ export default function GamePage() {
           isOwner={isOwner}
           onLevelChange={handleLevelChange}
           onReorder={handleReorder}
+          viewMode={viewMode}
         />
       </div>
 

@@ -18,10 +18,11 @@ export async function createGame(
   supabase: SupabaseClient<Database>,
   playerIds: string[],
   epicMode: boolean,
+  lang?: string,
 ): Promise<GameWithPlayers> {
   const { data: game, error: gameError } = await supabase
     .from('games')
-    .insert({ epic_mode: epicMode, player_order: playerIds })
+    .insert({ epic_mode: epicMode, player_order: playerIds, ...(lang ? { lang } : {}) })
     .select()
     .single();
   if (gameError) throw new Error(`Failed to create game: ${gameError.message}`);

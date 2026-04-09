@@ -17,6 +17,7 @@ interface GameStoreState {
   // UI
   isLoading: boolean;
   isSaving: boolean;
+  viewMode: 'grid' | 'list';
 
   // Actions
   setUserId: (id: string | null) => void;
@@ -29,6 +30,7 @@ interface GameStoreState {
   setLastSavedAt: (timestamp: string) => void;
   updatePlayerLevel: (gamePlayerId: string, newLevel: number) => void;
   clearGame: () => void;
+  setViewMode: (mode: 'grid' | 'list') => void;
 }
 
 // Detectar storage disponível (web: localStorage, mobile: será sobrescrito via AsyncStorage)
@@ -52,6 +54,7 @@ export const useGameStore = create<GameStoreState>()(
       lastSavedAt: null,
       isLoading: false,
       isSaving: false,
+      viewMode: 'grid',
 
       // Actions
       setUserId: (id) => set({ userId: id }),
@@ -89,6 +92,8 @@ export const useGameStore = create<GameStoreState>()(
           sortMode: 'level-desc',
           lastSavedAt: null,
         }),
+
+      setViewMode: (mode) => set({ viewMode: mode }),
     }),
     {
       name: 'munchkin-store',
@@ -100,6 +105,7 @@ export const useGameStore = create<GameStoreState>()(
         gamePlayers: state.gamePlayers,
         sortMode: state.sortMode,
         lastSavedAt: state.lastSavedAt,
+        viewMode: state.viewMode,
       }),
     }
   )
