@@ -7,11 +7,13 @@ import NewGameConfigPage from '@/pages/NewGameConfigPage';
 import GamePage from '@/pages/GamePage';
 import SettingsPage from '@/pages/SettingsPage';
 import SpectatePage from '@/pages/SpectatePage';
+import RulesPage from '@/pages/RulesPage';
 import ProtectedRoute from '@/components/ProtectedRoute/ProtectedRoute';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Home /> },
   { path: '/auth', element: <AuthPage /> },
+  { path: '/rules', element: <RulesPage /> },
   { path: '/spectate/:gameId', element: <SpectatePage /> },
   {
     element: <ProtectedRoute />,

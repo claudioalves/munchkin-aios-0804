@@ -5,10 +5,14 @@ import type { GameWithPlayers } from '../types';
 export async function getActiveGame(
   supabase: SupabaseClient<Database>,
 ): Promise<GameWithPlayers | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data, error } = await supabase
     .from('games')
     .select(`*, game_players (*, player:players (*))`)
     .eq('status', 'active')
+    .eq('owner_id', user.id)
     .maybeSingle();
   if (error) throw new Error(`Failed to fetch active game: ${error.message}`);
   return data as GameWithPlayers | null;

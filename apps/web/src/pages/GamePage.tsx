@@ -17,13 +17,19 @@ import { VictoryModal } from '@/components/VictoryModal/VictoryModal';
 import { NarratorButton } from '@/components/NarratorButton/NarratorButton';
 import { ProgressChart } from '@/components/ProgressChart/ProgressChart';
 import { SortDropdown } from '@/components/SortDropdown/SortDropdown';
+import { GameTimer } from '@/components/GameTimer/GameTimer';
+import { DiceButton } from '@/components/DiceButton/DiceButton';
 import { useLevelUpdate } from '@/hooks/useLevelUpdate';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useSyncQueue } from '@/hooks/useSyncQueue';
 import { useTTS } from '@/hooks/useTTS';
 import { useSnapshots } from '@/hooks/useSnapshots';
 import { useRealtimeGame } from '@/hooks/useRealtimeGame';
+import { useWakeLock } from '@/hooks/useWakeLock';
 import { ShareModal } from '@/components/ShareModal/ShareModal';
+
+// URL do NotebookLM das regras — altere conforme necessário
+const NOTEBOOKLM_URL = 'https://notebooklm.google.com';
 
 function shuffleIds(ids: string[]): string[] {
   const arr = [...ids];
@@ -53,6 +59,7 @@ export default function GamePage() {
   } = useGameStore();
   const isOwner = !!userId && !!activeGame && userId === activeGame.owner_id;
   useRealtimeGame(supabase, activeGame?.id ?? null);
+  useWakeLock(!!activeGame);
   const handleLevelChange = useLevelUpdate();
   const { isSupported, isSpeaking, speak, stop } = useTTS();
   const [isChartOpen, setIsChartOpen] = useState(false);
@@ -195,17 +202,46 @@ export default function GamePage() {
         />
       </div>
 
+      {/* Barra de informações: timer + acesso rápido */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <GameTimer startedAt={activeGame.started_at} />
+        <div className="flex items-center gap-2 ml-auto">
+          <a
+            href="/rules"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Ver regras do Munchkin"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors"
+          >
+            <span aria-hidden>📖</span>
+            <span>Regras</span>
+          </a>
+          <a
+            href={NOTEBOOKLM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Abrir NotebookLM das regras"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors"
+          >
+            <span aria-hidden>🎙</span>
+            <span>NotebookLM</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Barra de ações */}
       <div className="pb-4 flex items-center gap-3">
         {isOwner && (
-        <div className="flex-1">
-          <HoldButton onComplete={() => void handleFinish()} />
-        </div>
+          <div className="flex-1">
+            <HoldButton onComplete={() => void handleFinish()} />
+          </div>
         )}
         <NarratorButton
           isSupported={isSupported}
           isSpeaking={isSpeaking}
           onClick={handleNarrate}
         />
+        <DiceButton />
       </div>
 
       {winner && (

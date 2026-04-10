@@ -11,10 +11,11 @@ export default function Home() {
   const [activeGame, setActiveGame] = useState<GameWithPlayers | null | undefined>(undefined);
   const [showLangModal, setShowLangModal] = useState(false);
   const navigate = useNavigate();
-  const { userId, setUserId } = useGameStore();
+  const { userId, setUserId, clearGame } = useGameStore();
   const { t, isLanguageSet } = useLang();
 
-  // Verificar sessão ao montar
+  // Verificar sessão ao montar — roda apenas uma vez por mount
+  // isLanguageSet NÃO está nos deps: não queremos re-executar quando o idioma muda
   useEffect(() => {
     async function checkSession() {
       const user = await getSessionUser(supabase);
@@ -26,7 +27,8 @@ export default function Home() {
       }
     }
     void checkSession();
-  }, [navigate, setUserId, isLanguageSet]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, setUserId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -41,6 +43,7 @@ export default function Home() {
     } catch {
       // ignora erros de logout
     }
+    clearGame();
     setUserId(null);
     void navigate('/auth');
   }
@@ -94,12 +97,12 @@ export default function Home() {
           {t('home.players')}
         </Link>
 
-        <button
-          disabled
-          className="text-parchment-dim font-heading px-6 py-3 rounded-xl text-center text-sm cursor-not-allowed"
+        <Link
+          to="/rules"
+          className="text-parchment-muted font-heading px-6 py-3 rounded-xl text-center text-sm hover:text-parchment hover:bg-surface-elevated transition-colors border border-parchment-dim/30 hover:border-brand-gold/40"
         >
-          {t('home.rules')}
-        </button>
+          📖 {t('home.rules')}
+        </Link>
 
         <Link
           to="/settings"

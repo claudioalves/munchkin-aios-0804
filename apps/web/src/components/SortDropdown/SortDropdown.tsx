@@ -6,9 +6,9 @@ interface SortDropdownProps {
 }
 
 const OPTIONS: { mode: SortMode; label: string; icon: string }[] = [
+  { mode: 'custom', label: 'Personalizado', icon: '↕️' },
   { mode: 'level-desc', label: 'Por Nível', icon: '🏆' },
   { mode: 'random', label: 'Aleatório', icon: '🔀' },
-  { mode: 'custom', label: 'Personalizado', icon: '↕️' },
 ];
 
 export function SortDropdown({ sortMode, onSortChange }: SortDropdownProps) {

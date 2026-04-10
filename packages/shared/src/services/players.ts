@@ -3,9 +3,13 @@ import type { Database } from '../database.types';
 import type { Player } from '../types';
 
 export async function getPlayers(supabase: SupabaseClient<Database>): Promise<Player[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from('players')
     .select('*')
+    .eq('owner_id', user.id)
     .order('created_at', { ascending: true });
   if (error) throw new Error(`Failed to fetch players: ${error.message}`);
   return data ?? [];

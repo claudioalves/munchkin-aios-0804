@@ -50,14 +50,21 @@ export const useGameStore = create<GameStoreState>()(
       userId: null,
       activeGame: null,
       gamePlayers: [],
-      sortMode: 'level-desc',
+      sortMode: 'custom',
       lastSavedAt: null,
       isLoading: false,
       isSaving: false,
       viewMode: 'grid',
 
       // Actions
-      setUserId: (id) => set({ userId: id }),
+      setUserId: (id) =>
+        set((state) => {
+          // Troca de usuário: limpar dados do jogo anterior para evitar vazamento entre contas
+          if (id !== state.userId) {
+            return { userId: id, activeGame: null, gamePlayers: [], sortMode: 'custom', lastSavedAt: null };
+          }
+          return { userId: id };
+        }),
 
       setActiveGame: (game) => set({ activeGame: game }),
 
@@ -89,7 +96,7 @@ export const useGameStore = create<GameStoreState>()(
         set({
           activeGame: null,
           gamePlayers: [],
-          sortMode: 'level-desc',
+          sortMode: 'custom',
           lastSavedAt: null,
         }),
 
