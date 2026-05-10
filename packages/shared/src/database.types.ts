@@ -40,6 +40,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          game_id: string
+          id: string
+          new_value: number | null
+          old_value: number | null
+          player_id: string | null
+          player_name: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          game_id: string
+          id?: string
+          new_value?: number | null
+          old_value?: number | null
+          player_id?: string | null
+          player_name: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          game_id?: string
+          id?: string
+          new_value?: number | null
+          old_value?: number | null
+          player_id?: string | null
+          player_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_events_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_events_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_players: {
         Row: {
           game_id: string

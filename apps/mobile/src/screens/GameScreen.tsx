@@ -18,6 +18,7 @@ import {
   updateLevel,
   finishGame,
   captureSnapshot,
+  logEvent,
   GAME_CONFIG,
 } from '@munchkin/shared';
 import type { GamePlayerWithInfo } from '@munchkin/shared';
@@ -95,11 +96,18 @@ export function GameScreen({ navigation }: Props) {
 
     try {
       await updateLevel(supabase, gamePlayerId, newLevel);
+      void logEvent(supabase, {
+        game_id: activeGame.id,
+        player_id: gp.player_id,
+        player_name: gp.player.name,
+        event_type: 'level_up',
+        old_value: gp.level,
+        new_value: newLevel,
+      });
       if (newLevel >= activeGame.victory_level) {
         announceWinner(gp, newLevel);
       }
     } catch {
-      // Reverter
       updatePlayerLevel(gamePlayerId, gp.level);
     }
   }
@@ -114,6 +122,14 @@ export function GameScreen({ navigation }: Props) {
 
     try {
       await updateLevel(supabase, gamePlayerId, newLevel);
+      void logEvent(supabase, {
+        game_id: activeGame.id,
+        player_id: gp.player_id,
+        player_name: gp.player.name,
+        event_type: 'level_down',
+        old_value: gp.level,
+        new_value: newLevel,
+      });
     } catch {
       updatePlayerLevel(gamePlayerId, gp.level);
     }
@@ -178,6 +194,12 @@ export function GameScreen({ navigation }: Props) {
           {activeGame.epic_mode ? '⚔️ Modo Épico' : '⚔️ Partida'}
         </Text>
         <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.shareBtn}
+            onPress={() => navigation.navigate('GameLog', { gameId: activeGame.id })}
+          >
+            <Text style={styles.shareBtnText}>📋</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.shareBtn}
             onPress={() => {

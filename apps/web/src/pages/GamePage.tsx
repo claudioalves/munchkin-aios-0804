@@ -150,6 +150,7 @@ export default function GamePage() {
         epicMode={activeGame.epic_mode}
         playerCount={gamePlayers.length}
         onBack={() => navigate('/')}
+        onLogOpen={() => navigate('/game/log')}
         onChartOpen={() => setIsChartOpen(true)}
         onShareOpen={() => setIsShareOpen(true)}
       />

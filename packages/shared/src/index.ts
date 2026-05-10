@@ -9,4 +9,5 @@ export { ensureAnonymousSession, signUpWithEmail, signInWithEmail, signOut, getS
 export { getPlayers, createPlayer, deletePlayer, updatePlayer } from './services/players';
 export { getActiveGame, getGameById, createGame, finishGame, updateGameOrder } from './services/games';
 export { updateLevel, captureSnapshot, getSnapshots } from './services/levels';
+export { logEvent, getGameEvents } from './services/events';
 export { useGameStore } from './store/gameStore';

@@ -4,9 +4,10 @@ interface AppHeaderProps {
   onBack: () => void;
   onChartOpen?: () => void;
   onShareOpen?: () => void;
+  onLogOpen?: () => void;
 }
 
-export function AppHeader({ epicMode, playerCount, onBack, onChartOpen, onShareOpen }: AppHeaderProps) {
+export function AppHeader({ epicMode, playerCount, onBack, onChartOpen, onShareOpen, onLogOpen }: AppHeaderProps) {
   return (
     <header className="flex items-center justify-between py-2 px-1 gap-2">
       <button
@@ -26,6 +27,16 @@ export function AppHeader({ epicMode, playerCount, onBack, onChartOpen, onShareO
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        {onLogOpen && (
+          <button
+            onClick={onLogOpen}
+            title="Ver log da partida"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/60 hover:text-brand-gold transition-colors text-parchment-muted"
+          >
+            <span className="text-base leading-none" aria-hidden>📋</span>
+            <span className="font-heading text-[10px] leading-none">Log</span>
+          </button>
+        )}
         {onShareOpen && (
           <button
             onClick={onShareOpen}

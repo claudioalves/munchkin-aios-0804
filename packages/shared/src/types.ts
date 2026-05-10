@@ -53,3 +53,16 @@ export interface LevelSnapshot {
 export type SortMode = 'level-desc' | 'random' | 'custom';
 
 export type Platform = 'web' | 'mobile';
+
+export type GameEventType = 'level_up' | 'level_down' | 'game_start' | 'game_end';
+
+export interface GameEvent {
+  id: string;
+  game_id: string;
+  player_id: string | null;
+  player_name: string;
+  event_type: GameEventType;
+  old_value: number | null;
+  new_value: number | null;
+  created_at: string;
+}

@@ -6,6 +6,7 @@ import { AuthScreen } from '../screens/AuthScreen';
 import { PlayersScreen } from '../screens/PlayersScreen';
 import { NewGameScreen } from '../screens/NewGameScreen';
 import { GameScreen } from '../screens/GameScreen';
+import { GameLogScreen } from '../screens/GameLogScreen';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   Players: undefined;
   NewGame: undefined;
   Game: { gameId: string };
+  GameLog: { gameId: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -54,6 +56,11 @@ export function AppNavigator() {
           name="Game"
           component={GameScreen}
           options={{ title: 'Partida', headerBackTitle: '' }}
+        />
+        <Stack.Screen
+          name="GameLog"
+          component={GameLogScreen}
+          options={{ title: 'Log da Partida', headerBackTitle: '' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
