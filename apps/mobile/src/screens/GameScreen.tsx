@@ -91,19 +91,19 @@ export function GameScreen({ navigation }: Props) {
     const gp = gamePlayers.find((p) => p.id === gamePlayerId);
     if (!gp) return;
 
-    const newLevel = Math.min(gp.level + 1, activeGame.max_level + 1);
+    const newLevel = Math.min(gp.level + 1, activeGame.max_level);
     updatePlayerLevel(gamePlayerId, newLevel);
 
     try {
       await updateLevel(supabase, gamePlayerId, newLevel);
-      void logEvent(supabase, {
+      logEvent(supabase, {
         game_id: activeGame.id,
         player_id: gp.player_id,
         player_name: gp.player.name,
         event_type: 'level_up',
         old_value: gp.level,
         new_value: newLevel,
-      });
+      }).catch(() => undefined);
       if (newLevel >= activeGame.victory_level) {
         announceWinner(gp, newLevel);
       }
@@ -122,14 +122,14 @@ export function GameScreen({ navigation }: Props) {
 
     try {
       await updateLevel(supabase, gamePlayerId, newLevel);
-      void logEvent(supabase, {
+      logEvent(supabase, {
         game_id: activeGame.id,
         player_id: gp.player_id,
         player_name: gp.player.name,
         event_type: 'level_down',
         old_value: gp.level,
         new_value: newLevel,
-      });
+      }).catch(() => undefined);
     } catch {
       updatePlayerLevel(gamePlayerId, gp.level);
     }

@@ -1,11 +1,6 @@
 @import "tailwindcss";
 
 /* ================================================
-   GOOGLE FONTS
-   ================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
-
-/* ================================================
    TAILWIND 4 — THEME TOKENS
    Gera automaticamente utilitários como:
      bg-brand-gold, text-brand-gold

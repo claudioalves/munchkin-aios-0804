@@ -13,8 +13,10 @@ const mockPlayer = {
 describe('getPlayers', () => {
   it('retorna array de jogadores', async () => {
     const mockOrder = vi.fn().mockResolvedValue({ data: [mockPlayer], error: null });
-    const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-    const supabase = { from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
+    const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
 
     const result = await getPlayers(supabase);
 
@@ -24,18 +26,32 @@ describe('getPlayers', () => {
 
   it('retorna array vazio quando data é null', async () => {
     const mockOrder = vi.fn().mockResolvedValue({ data: null, error: null });
-    const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-    const supabase = { from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
+    const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
 
     const result = await getPlayers(supabase);
 
     expect(result).toEqual([]);
   });
 
+  it('retorna array vazio quando não há usuário autenticado', async () => {
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn() } as unknown as MockSupabase;
+
+    const result = await getPlayers(supabase);
+
+    expect(result).toEqual([]);
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
   it('lança erro em caso de falha', async () => {
     const mockOrder = vi.fn().mockResolvedValue({ data: null, error: { message: 'fetch failed' } });
-    const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-    const supabase = { from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
+    const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
 
     await expect(getPlayers(supabase)).rejects.toThrow('Failed to fetch players: fetch failed');
   });

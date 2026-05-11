@@ -19,6 +19,11 @@ export default function SpectatePage() {
 
   useRealtimeGame(supabase, gameId ?? null);
 
+  // Limpa o store ao sair da página para não poluir a sessão do usuário logado
+  useEffect(() => {
+    return () => { useGameStore.setState({ gamePlayers: [] }); };
+  }, []);
+
   // Sincroniza updates realtime com o estado local
   const { gamePlayers } = useGameStore();
   useEffect(() => {

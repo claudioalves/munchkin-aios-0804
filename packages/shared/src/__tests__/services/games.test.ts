@@ -14,9 +14,11 @@ describe('getActiveGame', () => {
       game_players: [],
     };
     const mockMaybeSingle = vi.fn().mockResolvedValue({ data: mockGame, error: null });
-    const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
-    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-    const supabase = { from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
+    const chain = { eq: vi.fn(), maybeSingle: mockMaybeSingle };
+    chain.eq.mockReturnValue(chain);
+    const mockSelect = vi.fn().mockReturnValue(chain);
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
 
     const result = await getActiveGame(supabase);
 
@@ -26,20 +28,34 @@ describe('getActiveGame', () => {
 
   it('retorna null quando não há jogo ativo', async () => {
     const mockMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
-    const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
-    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-    const supabase = { from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
+    const chain = { eq: vi.fn(), maybeSingle: mockMaybeSingle };
+    chain.eq.mockReturnValue(chain);
+    const mockSelect = vi.fn().mockReturnValue(chain);
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
 
     const result = await getActiveGame(supabase);
 
     expect(result).toBeNull();
   });
 
+  it('retorna null quando não há usuário autenticado', async () => {
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn() } as unknown as MockSupabase;
+
+    const result = await getActiveGame(supabase);
+
+    expect(result).toBeNull();
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
   it('lança erro em caso de falha', async () => {
     const mockMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: { message: 'DB error' } });
-    const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
-    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-    const supabase = { from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
+    const chain = { eq: vi.fn(), maybeSingle: mockMaybeSingle };
+    chain.eq.mockReturnValue(chain);
+    const mockSelect = vi.fn().mockReturnValue(chain);
+    const mockAuth = { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) };
+    const supabase = { auth: mockAuth, from: vi.fn().mockReturnValue({ select: mockSelect }) } as unknown as MockSupabase;
 
     await expect(getActiveGame(supabase)).rejects.toThrow('Failed to fetch active game: DB error');
   });

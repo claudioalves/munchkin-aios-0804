@@ -53,7 +53,7 @@ const estadoInicial = {
   userId: null,
   activeGame: null,
   gamePlayers: [],
-  sortMode: 'level-desc' as const,
+  sortMode: 'custom' as const,
   lastSavedAt: null,
   isLoading: false,
   isSaving: false,
@@ -96,14 +96,14 @@ describe('gameStore', () => {
       useGameStore.setState({ gamePlayers: [basePlayer, secondPlayer] });
       useGameStore.getState().updatePlayerLevel('gp-1', 5);
       const players = useGameStore.getState().gamePlayers;
-      expect(players[0].level).toBe(5);
-      expect(players[1].level).toBe(3);
+      expect(players[0]!.level).toBe(5);
+      expect(players[1]!.level).toBe(3);
     });
 
     it('não altera outros campos do jogador', () => {
       useGameStore.setState({ gamePlayers: [basePlayer] });
       useGameStore.getState().updatePlayerLevel('gp-1', 7);
-      const player = useGameStore.getState().gamePlayers[0];
+      const player = useGameStore.getState().gamePlayers[0]!;
       expect(player.id).toBe('gp-1');
       expect(player.player.name).toBe('Alice');
     });
@@ -111,7 +111,7 @@ describe('gameStore', () => {
     it('não altera jogadores com id diferente', () => {
       useGameStore.setState({ gamePlayers: [basePlayer, secondPlayer] });
       useGameStore.getState().updatePlayerLevel('gp-2', 9);
-      expect(useGameStore.getState().gamePlayers[0].level).toBe(1);
+      expect(useGameStore.getState().gamePlayers[0]!.level).toBe(1);
     });
   });
 
@@ -120,8 +120,8 @@ describe('gameStore', () => {
       useGameStore.setState({ gamePlayers: [basePlayer, secondPlayer] });
       useGameStore.getState().setGamePlayersOrder(['gp-2', 'gp-1']);
       const players = useGameStore.getState().gamePlayers;
-      expect(players[0].id).toBe('gp-2');
-      expect(players[1].id).toBe('gp-1');
+      expect(players[0]!.id).toBe('gp-2');
+      expect(players[1]!.id).toBe('gp-1');
     });
 
     it('ignora IDs que não existem no array atual', () => {
@@ -129,7 +129,7 @@ describe('gameStore', () => {
       useGameStore.getState().setGamePlayersOrder(['gp-999', 'gp-1']);
       const players = useGameStore.getState().gamePlayers;
       expect(players).toHaveLength(1);
-      expect(players[0].id).toBe('gp-1');
+      expect(players[0]!.id).toBe('gp-1');
     });
   });
 
@@ -158,10 +158,10 @@ describe('gameStore', () => {
       expect(useGameStore.getState().gamePlayers).toEqual([]);
     });
 
-    it('reseta sortMode para level-desc', () => {
-      useGameStore.setState({ sortMode: 'custom' });
+    it('reseta sortMode para custom', () => {
+      useGameStore.setState({ sortMode: 'random' });
       useGameStore.getState().clearGame();
-      expect(useGameStore.getState().sortMode).toBe('level-desc');
+      expect(useGameStore.getState().sortMode).toBe('custom');
     });
 
     it('reseta lastSavedAt para null', () => {

@@ -16,6 +16,14 @@ export default [
     ],
   },
   {
+    files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
     files: ['apps/web/src/**/*.{ts,tsx}', 'packages/shared/src/**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsParser,

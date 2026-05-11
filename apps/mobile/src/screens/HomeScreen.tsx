@@ -81,9 +81,6 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.userId}>
-        {userId ? `ID: ${userId.slice(0, 8)}...` : 'Sem sessão'}
-      </Text>
     </View>
   );
 }
@@ -161,10 +158,5 @@ const styles = StyleSheet.create({
     color: colors.brandText,
     fontSize: fontSize.md,
     fontWeight: '500',
-  },
-  userId: {
-    color: colors.brandBorder,
-    fontSize: fontSize.xs,
-    textAlign: 'center',
   },
 });
