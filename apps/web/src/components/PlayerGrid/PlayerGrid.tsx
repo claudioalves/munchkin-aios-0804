@@ -19,10 +19,12 @@ interface PlayerGridProps {
   maxLevel: number;
   victoryLevel: number;
   sortMode: SortMode;
-  isOwner?: boolean;
+  isOwner?: boolean | undefined;
+  isTransActive?: boolean | undefined;
   onLevelChange: (gamePlayerId: string, currentLevel: number, delta: 1 | -1) => void;
-  onReorder?: (activeId: string, overId: string) => void;
-  viewMode?: 'grid' | 'list';
+  onReorder?: ((activeId: string, overId: string) => void) | undefined;
+  onPlayerClick?: ((gamePlayerId: string) => void) | undefined;
+  viewMode?: ('grid' | 'list') | undefined;
 }
 
 interface SortableCardProps {
@@ -32,10 +34,12 @@ interface SortableCardProps {
   isLeader: boolean;
   isVictory: boolean;
   isOwner: boolean;
+  isTransActive?: boolean | undefined;
   onLevelChange: (gamePlayerId: string, currentLevel: number, delta: 1 | -1) => void;
+  onPlayerClick?: ((gamePlayerId: string) => void) | undefined;
 }
 
-function SortableCard({ gp, index, maxLevel, isLeader, isVictory, isOwner, onLevelChange }: SortableCardProps) {
+function SortableCard({ gp, index, maxLevel, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: gp.id,
   });
@@ -56,6 +60,8 @@ function SortableCard({ gp, index, maxLevel, isLeader, isVictory, isOwner, onLev
       <PlayerCard
         gamePlayerId={gp.id}
         name={gp.player.name}
+        femaleName={gp.female_name}
+        isTransActive={isTransActive}
         color={gp.player.color}
         level={gp.level}
         maxLevel={maxLevel}
@@ -64,6 +70,7 @@ function SortableCard({ gp, index, maxLevel, isLeader, isVictory, isOwner, onLev
         isOwner={isOwner}
         onIncrement={(id) => onLevelChange(id, gp.level, 1)}
         onDecrement={(id) => onLevelChange(id, gp.level, -1)}
+        onPlayerClick={onPlayerClick}
       />
     </div>
   );
@@ -77,15 +84,19 @@ interface SortableListItemProps {
   isLeader: boolean;
   isVictory: boolean;
   isOwner: boolean;
+  isTransActive?: boolean | undefined;
   onLevelChange: (gamePlayerId: string, currentLevel: number, delta: 1 | -1) => void;
+  onPlayerClick?: ((gamePlayerId: string) => void) | undefined;
 }
 
-function ListItem({ gp, index, maxLevel, victoryLevel, isLeader, isVictory, isOwner, onLevelChange }: SortableListItemProps) {
+function ListItem({ gp, index, maxLevel, victoryLevel, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick }: SortableListItemProps) {
   const ringClass = isVictory
     ? 'ring-2 ring-brand-emerald'
     : isLeader
     ? 'ring-2 ring-brand-gold'
     : '';
+
+  const nameToDisplay = isTransActive && gp.female_name ? `${gp.player.name} - (${gp.female_name})` : gp.player.name;
 
   return (
     <div
@@ -96,9 +107,14 @@ function ListItem({ gp, index, maxLevel, victoryLevel, isLeader, isVictory, isOw
         className="w-4 h-4 rounded-full flex-shrink-0"
         style={{ backgroundColor: gp.player.color }}
       />
-      <span className="font-heading text-parchment text-sm flex-shrink-0 w-24 truncate">
-        {gp.player.name}
-      </span>
+      <button
+        type="button"
+        onClick={() => onPlayerClick?.(gp.id)}
+        className="font-heading text-parchment text-sm flex-shrink-0 w-36 truncate text-left hover:opacity-80 transition-opacity cursor-pointer"
+        title="Ver/Editar jogador na partida"
+      >
+        {nameToDisplay}
+      </button>
       <div className="flex-1 h-2 bg-surface-elevated rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all"
@@ -161,8 +177,10 @@ export function PlayerGrid({
   victoryLevel,
   sortMode,
   isOwner = true,
+  isTransActive = false,
   onLevelChange,
   onReorder,
+  onPlayerClick,
   viewMode = 'grid',
 }: PlayerGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -207,7 +225,9 @@ export function PlayerGrid({
                 isLeader={isLeader}
                 isVictory={isVictory}
                 isOwner={isOwner}
+                isTransActive={isTransActive}
                 onLevelChange={onLevelChange}
+                onPlayerClick={onPlayerClick}
               />
             );
           }
@@ -222,7 +242,9 @@ export function PlayerGrid({
               isLeader={isLeader}
               isVictory={isVictory}
               isOwner={isOwner}
+              isTransActive={isTransActive}
               onLevelChange={onLevelChange}
+              onPlayerClick={onPlayerClick}
             />
           );
         })}
@@ -261,7 +283,9 @@ export function PlayerGrid({
                 isLeader={false}
                 isVictory={false}
                 isOwner={false}
+                isTransActive={isTransActive}
                 onLevelChange={() => undefined}
+                onPlayerClick={onPlayerClick}
               />
             </div>
           )}
@@ -292,7 +316,9 @@ export function PlayerGrid({
               isLeader={isLeader}
               isVictory={isVictory}
               isOwner={isOwner}
+              isTransActive={isTransActive}
               onLevelChange={onLevelChange}
+              onPlayerClick={onPlayerClick}
             />
           );
         }
@@ -306,6 +332,8 @@ export function PlayerGrid({
             <PlayerCard
               gamePlayerId={gp.id}
               name={gp.player.name}
+              femaleName={gp.female_name}
+              isTransActive={isTransActive}
               color={gp.player.color}
               level={gp.level}
               maxLevel={maxLevel}
@@ -314,6 +342,7 @@ export function PlayerGrid({
               isOwner={isOwner}
               onIncrement={(id) => onLevelChange(id, gp.level, 1)}
               onDecrement={(id) => onLevelChange(id, gp.level, -1)}
+              onPlayerClick={onPlayerClick}
             />
           </div>
         );

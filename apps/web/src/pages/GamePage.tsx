@@ -10,6 +10,7 @@ import {
   STORAGE_KEYS,
   captureSnapshot,
 } from '@munchkin/shared';
+import type { GamePlayerWithInfo } from '@munchkin/shared';
 import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
 import { AppHeader } from '@/components/AppHeader/AppHeader';
 import { HoldButton } from '@/components/HoldButton/HoldButton';
@@ -19,6 +20,9 @@ import { ProgressChart } from '@/components/ProgressChart/ProgressChart';
 import { SortDropdown } from '@/components/SortDropdown/SortDropdown';
 import { GameTimer } from '@/components/GameTimer/GameTimer';
 import { DiceButton } from '@/components/DiceButton/DiceButton';
+import { GameOptionsModal } from '@/components/GameOptionsModal/GameOptionsModal';
+import { TransDungeonModal } from '@/components/TransDungeonModal/TransDungeonModal';
+import { PlayerProfileModal } from '@/components/PlayerProfileModal/PlayerProfileModal';
 import { useLevelUpdate } from '@/hooks/useLevelUpdate';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useSyncQueue } from '@/hooks/useSyncQueue';
@@ -50,11 +54,15 @@ export default function GamePage() {
     gamePlayers,
     sortMode,
     viewMode,
+    isTransDungeonActive,
     setActiveGame,
     setGamePlayers,
     setGamePlayersOrder,
     setSortMode,
     setViewMode,
+    setTransDungeonActive,
+    setAllFemaleNames,
+    setPlayerFemaleName,
     clearGame,
   } = useGameStore();
   const isOwner = !!userId && !!activeGame && userId === activeGame.owner_id;
@@ -64,6 +72,9 @@ export default function GamePage() {
   const { isSupported, isSpeaking, speak, stop } = useTTS();
   const [isChartOpen, setIsChartOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isTransModalOpen, setIsTransModalOpen] = useState(false);
+  const [selectedPlayerForModal, setSelectedPlayerForModal] = useState<GamePlayerWithInfo | null>(null);
   const [randomOrder, setRandomOrder] = useState<string[]>([]);
   const { snapshots } = useSnapshots(activeGame?.id);
   const initialSnapshotDone = useRef(false);
@@ -131,7 +142,14 @@ export default function GamePage() {
   const handleNarrate = () => {
     if (isSpeaking) { stop(); return; }
     const sorted = [...gamePlayers].sort((a, b) => b.level - a.level);
-    const text = sorted.map((p) => `${p.player.name} nível ${p.level}`).join('. ');
+    const text = sorted
+      .map((p) => {
+        if (isTransDungeonActive && p.female_name) {
+          return `${p.player.name} como ${p.female_name} nível ${p.level}`;
+        }
+        return `${p.player.name} nível ${p.level}`;
+      })
+      .join('. ');
     speak(text);
   };
 
@@ -150,6 +168,7 @@ export default function GamePage() {
         epicMode={activeGame.epic_mode}
         playerCount={gamePlayers.length}
         onBack={() => navigate('/')}
+        onOptionsOpen={() => setIsOptionsOpen(true)}
         onLogOpen={() => navigate('/game/log')}
         onChartOpen={() => setIsChartOpen(true)}
         onShareOpen={() => setIsShareOpen(true)}
@@ -197,8 +216,13 @@ export default function GamePage() {
           victoryLevel={activeGame.victory_level}
           sortMode={sortMode}
           isOwner={isOwner}
+          isTransActive={isTransDungeonActive}
           onLevelChange={handleLevelChange}
           onReorder={handleReorder}
+          onPlayerClick={(gpId) => {
+            const found = gamePlayers.find((p) => p.id === gpId);
+            if (found) setSelectedPlayerForModal(found);
+          }}
           viewMode={viewMode}
         />
       </div>
@@ -230,20 +254,26 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* Barra de ações */}
-      <div className="pb-4 flex items-center gap-3">
-        {isOwner && (
-          <div className="flex-1">
-            <HoldButton onComplete={() => void handleFinish()} />
-          </div>
-        )}
-        <NarratorButton
-          isSupported={isSupported}
-          isSpeaking={isSpeaking}
-          onClick={handleNarrate}
-        />
-        <DiceButton />
+      {/* Barra de ações principais (70% Narrar, 30% Dado) */}
+      <div className="flex items-stretch gap-3 w-full">
+        <div className="w-[70%]">
+          <NarratorButton
+            isSupported={isSupported}
+            isSpeaking={isSpeaking}
+            onClick={handleNarrate}
+          />
+        </div>
+        <div className="w-[30%]">
+          <DiceButton />
+        </div>
       </div>
+
+      {/* Botão de encerrar no final da página (rolar para acessar) */}
+      {isOwner && (
+        <div className="pt-10 pb-8 mt-6 border-t border-parchment-dim/15 flex flex-col items-center justify-center gap-2">
+          <HoldButton onComplete={() => void handleFinish()} />
+        </div>
+      )}
 
       {winner && (
         <VictoryModal
@@ -264,6 +294,40 @@ export default function GamePage() {
           onClose={() => setIsChartOpen(false)}
         />
       )}
+
+      <GameOptionsModal
+        isOpen={isOptionsOpen}
+        isTransActive={isTransDungeonActive}
+        onClose={() => setIsOptionsOpen(false)}
+        onToggleTrans={(active) => {
+          setTransDungeonActive(active);
+          if (active) {
+            setIsTransModalOpen(true);
+          }
+        }}
+        onEditTransNames={() => {
+          setIsOptionsOpen(false);
+          setIsTransModalOpen(true);
+        }}
+      />
+
+      <TransDungeonModal
+        isOpen={isTransModalOpen}
+        gamePlayers={gamePlayers}
+        onClose={() => setIsTransModalOpen(false)}
+        onSave={(femaleNamesMap) => {
+          setAllFemaleNames(femaleNamesMap);
+        }}
+      />
+
+      <PlayerProfileModal
+        gp={selectedPlayerForModal}
+        isTransActive={isTransDungeonActive}
+        onClose={() => setSelectedPlayerForModal(null)}
+        onSaveFemaleName={(gamePlayerId, femaleName) => {
+          setPlayerFemaleName(gamePlayerId, femaleName);
+        }}
+      />
     </div>
   );
 }

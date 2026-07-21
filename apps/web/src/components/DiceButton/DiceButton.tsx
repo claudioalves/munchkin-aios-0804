@@ -26,7 +26,7 @@ export function DiceButton() {
       disabled={rolling}
       title="Rolar dado"
       aria-label="Rolar dado"
-      className="flex flex-col items-center justify-center p-2 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/60 transition-colors min-w-[52px] gap-0.5 disabled:opacity-60"
+      className="w-full h-14 rounded-xl bg-surface-card border border-parchment-dim/40 hover:border-brand-gold/60 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
     >
       <span
         className={`text-2xl leading-none select-none ${rolling ? 'animate-dice-roll' : ''}`}
@@ -34,8 +34,8 @@ export function DiceButton() {
       >
         {face}
       </span>
-      <span className="font-heading text-xs text-parchment-muted leading-none">
-        {rolling ? '...' : result ? String(result) : 'dado'}
+      <span className="font-heading text-xs font-semibold text-parchment-muted leading-none uppercase tracking-wider">
+        {rolling ? '...' : result ? String(result) : 'Dado'}
       </span>
     </button>
   );

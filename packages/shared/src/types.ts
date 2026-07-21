@@ -32,6 +32,7 @@ export interface GamePlayer {
   level: number;
   position: number;
   updated_at: string;
+  female_name?: string | null | undefined;
 }
 
 export interface GamePlayerWithInfo extends GamePlayer {

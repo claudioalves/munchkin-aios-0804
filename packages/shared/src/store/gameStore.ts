@@ -18,6 +18,7 @@ interface GameStoreState {
   isLoading: boolean;
   isSaving: boolean;
   viewMode: 'grid' | 'list';
+  isTransDungeonActive: boolean;
 
   // Actions
   setUserId: (id: string | null) => void;
@@ -31,6 +32,9 @@ interface GameStoreState {
   updatePlayerLevel: (gamePlayerId: string, newLevel: number) => void;
   clearGame: () => void;
   setViewMode: (mode: 'grid' | 'list') => void;
+  setTransDungeonActive: (active: boolean) => void;
+  setPlayerFemaleName: (gamePlayerId: string, femaleName: string) => void;
+  setAllFemaleNames: (femaleNamesMap: Record<string, string>) => void;
 }
 
 // Detectar storage disponível (web: localStorage, mobile: será sobrescrito via AsyncStorage)
@@ -55,13 +59,14 @@ export const useGameStore = create<GameStoreState>()(
       isLoading: false,
       isSaving: false,
       viewMode: 'grid',
+      isTransDungeonActive: false,
 
       // Actions
       setUserId: (id) =>
         set((state) => {
           // Troca de usuário: limpar dados do jogo anterior para evitar vazamento entre contas
           if (id !== state.userId) {
-            return { userId: id, activeGame: null, gamePlayers: [], sortMode: 'custom', lastSavedAt: null };
+            return { userId: id, activeGame: null, gamePlayers: [], sortMode: 'custom', lastSavedAt: null, isTransDungeonActive: false };
           }
           return { userId: id };
         }),
@@ -98,9 +103,28 @@ export const useGameStore = create<GameStoreState>()(
           gamePlayers: [],
           sortMode: 'custom',
           lastSavedAt: null,
+          isTransDungeonActive: false,
         }),
 
       setViewMode: (mode) => set({ viewMode: mode }),
+
+      setTransDungeonActive: (active) => set({ isTransDungeonActive: active }),
+
+      setPlayerFemaleName: (gamePlayerId, femaleName) =>
+        set((state) => ({
+          gamePlayers: state.gamePlayers.map((p) =>
+            p.id === gamePlayerId ? { ...p, female_name: femaleName } : p
+          ),
+        })),
+
+      setAllFemaleNames: (femaleNamesMap) =>
+        set((state) => ({
+          gamePlayers: state.gamePlayers.map((p) =>
+            femaleNamesMap[p.id] !== undefined
+              ? { ...p, female_name: femaleNamesMap[p.id] || null }
+              : p
+          ),
+        })),
     }),
     {
       name: 'munchkin-store',
@@ -113,6 +137,7 @@ export const useGameStore = create<GameStoreState>()(
         sortMode: state.sortMode,
         lastSavedAt: state.lastSavedAt,
         viewMode: state.viewMode,
+        isTransDungeonActive: state.isTransDungeonActive,
       }),
     }
   )

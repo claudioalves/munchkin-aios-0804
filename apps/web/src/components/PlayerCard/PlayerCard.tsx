@@ -8,9 +8,12 @@ interface PlayerCardProps {
   maxLevel: number;
   isLeader: boolean;
   isVictory: boolean;
-  isOwner?: boolean;
+  isOwner?: boolean | undefined;
+  femaleName?: string | null | undefined;
+  isTransActive?: boolean | undefined;
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
+  onPlayerClick?: ((id: string) => void) | undefined;
 }
 
 export function PlayerCard({
@@ -22,9 +25,14 @@ export function PlayerCard({
   isLeader,
   isVictory,
   isOwner = true,
+  femaleName,
+  isTransActive = false,
   onIncrement,
   onDecrement,
+  onPlayerClick,
 }: PlayerCardProps) {
+  const nameToDisplay = isTransActive && femaleName ? `${name} - (${femaleName})` : name;
+
   return (
     <div
       className={`bg-surface-card rounded-xl p-4 flex flex-col items-center gap-3
@@ -37,15 +45,20 @@ export function PlayerCard({
         }`}
     >
       {/* Avatar + nome */}
-      <div className="flex items-center gap-2 w-full justify-center">
+      <button
+        type="button"
+        onClick={() => onPlayerClick?.(gamePlayerId)}
+        className="flex items-center gap-2 w-full justify-center text-left hover:opacity-85 transition-opacity cursor-pointer px-1 py-0.5 rounded-lg hover:bg-surface-elevated/50"
+        title="Ver/Editar jogador na partida"
+      >
         <span
           className="w-3 h-3 rounded-full flex-shrink-0"
           style={{ backgroundColor: color }}
         />
-        <span className="font-heading text-sm font-semibold tracking-wider uppercase text-parchment-muted truncate max-w-[120px]">
-          {name}
+        <span className="font-heading text-xs font-semibold tracking-wide uppercase text-parchment-muted truncate max-w-[200px]">
+          {nameToDisplay}
         </span>
-      </div>
+      </button>
 
       {/* Victory badge */}
       {isVictory && (
