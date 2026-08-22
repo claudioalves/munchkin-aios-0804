@@ -31,9 +31,7 @@ import { useSnapshots } from '@/hooks/useSnapshots';
 import { useRealtimeGame } from '@/hooks/useRealtimeGame';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { ShareModal } from '@/components/ShareModal/ShareModal';
-
-// URL do NotebookLM das regras — altere conforme necessário
-const NOTEBOOKLM_URL = 'https://notebooklm.google.com';
+import { NOTEBOOKLM_URL } from '@/lib/constants';
 
 function shuffleIds(ids: string[]): string[] {
   const arr = [...ids];

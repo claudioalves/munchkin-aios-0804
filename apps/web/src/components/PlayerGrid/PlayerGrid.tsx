@@ -120,7 +120,7 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, isLeader, isVictory
       className={`flex items-center gap-3 bg-surface-card rounded-xl px-4 py-3 animate-card-enter ${ringClass}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
-      <span className={`font-display font-black text-2xl leading-none flex-shrink-0 w-10 text-center opacity-40 ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}>
+      <span className={`font-display font-black text-5xl leading-none flex-shrink-0 w-16 text-center opacity-[0.90] ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}>
         {rank}º
       </span>
       <div

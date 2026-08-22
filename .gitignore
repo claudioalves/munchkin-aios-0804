@@ -39,3 +39,6 @@ coverage/
 supabase/.temp/
 
 .vercel
+
+# Fonte editorial das regras (PDFs de trabalho) — publicados em apps/web/public/regras-munchkin/
+/regras-munchkin/

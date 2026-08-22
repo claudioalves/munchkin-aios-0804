@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface RuleFile {
   id: string;
+  number: string;
   title: string;
   filename: string;
 }
@@ -11,65 +12,117 @@ interface Manifest {
   files: RuleFile[];
 }
 
+interface RuleDoc {
+  number: string;
+  title: string;
+  text: string;
+}
+
+type ViewMode = 'list' | 'search';
+
+const ACCENT_MAP: Record<string, string> = {
+  á: 'a', à: 'a', â: 'a', ã: 'a', ä: 'a',
+  é: 'e', è: 'e', ê: 'e', ë: 'e',
+  í: 'i', ì: 'i', î: 'i', ï: 'i',
+  ó: 'o', ò: 'o', ô: 'o', õ: 'o', ö: 'o',
+  ú: 'u', ù: 'u', û: 'u', ü: 'u',
+  ç: 'c', ñ: 'n',
+  Á: 'A', À: 'A', Â: 'A', Ã: 'A', Ä: 'A',
+  É: 'E', È: 'E', Ê: 'E', Ë: 'E',
+  Í: 'I', Ì: 'I', Î: 'I', Ï: 'I',
+  Ó: 'O', Ò: 'O', Ô: 'O', Õ: 'O', Ö: 'O',
+  Ú: 'U', Ù: 'U', Û: 'U', Ü: 'U',
+  Ç: 'C', Ñ: 'N',
+};
+
+const ACCENT_CHARS_REGEX = /[à-öø-ÿÀ-ÖØ-Þ]/g;
+
+// Substitui cada caractere acentuado por seu equivalente sem acento, preservando o tamanho
+// da string original -- os indices continuam validos para recortar o texto original.
+function foldAccents(s: string): string {
+  return s.replace(ACCENT_CHARS_REGEX, (c) => ACCENT_MAP[c] ?? c);
+}
+
 function escapeRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function pdfUrl(filename: string) {
+  return `/regras-munchkin/${encodeURIComponent(filename)}`;
+}
+
 type TextPart = { text: string; highlight: boolean };
 
-function splitHighlight(line: string, query: string): TextPart[] {
-  if (!query.trim()) return [{ text: line, highlight: false }];
-  const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+function splitHighlight(text: string, query: string, accentSensitive: boolean): TextPart[] {
+  if (!query.trim()) return [{ text, highlight: false }];
+  const haystack = accentSensitive ? text : foldAccents(text);
+  const needle = accentSensitive ? query : foldAccents(query);
+  const regex = new RegExp(`(${escapeRegex(needle)})`, 'gi');
   const parts: TextPart[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
-  while ((m = regex.exec(line)) !== null) {
-    if (m.index > last) parts.push({ text: line.slice(last, m.index), highlight: false });
-    parts.push({ text: m[1]!, highlight: true });
+  while ((m = regex.exec(haystack)) !== null) {
+    if (m.index > last) parts.push({ text: text.slice(last, m.index), highlight: false });
+    parts.push({ text: text.slice(m.index, m.index + m[1]!.length), highlight: true });
     last = m.index + m[1]!.length;
   }
-  if (last < line.length) parts.push({ text: line.slice(last), highlight: false });
+  if (last < text.length) parts.push({ text: text.slice(last), highlight: false });
   return parts;
+}
+
+function countMatches(text: string, query: string, accentSensitive: boolean): number {
+  if (!query.trim()) return 0;
+  const haystack = accentSensitive ? text : foldAccents(text);
+  const needle = accentSensitive ? query : foldAccents(query);
+  const matches = haystack.match(new RegExp(escapeRegex(needle), 'gi'));
+  return matches?.length ?? 0;
 }
 
 export default function RulesPage() {
   const navigate = useNavigate();
-  const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [manifest, setManifest] = useState<RuleFile[]>([]);
+  const [manifestLoading, setManifestLoading] = useState(true);
+  const [manifestError, setManifestError] = useState(false);
+  const [view, setView] = useState<ViewMode>('list');
+
+  const [docs, setDocs] = useState<RuleDoc[] | null>(null);
+
   const [query, setQuery] = useState('');
+  const [accentSensitive, setAccentSensitive] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
   const [matchIndex, setMatchIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // O texto de cada PDF e pre-extraido em build-time (scripts/extract-pdf-text.mjs)
+  // e servido como JSON estatico -- evita rodar o pdfjs (lento) no navegador.
   useEffect(() => {
-    setLoading(true);
-    fetch('/regras-munchkin/manifest.json')
-      .then((r) => r.json())
-      .then(async (manifest: Manifest) => {
-        const texts = await Promise.all(
-          manifest.files.map((f) =>
-            fetch(`/regras-munchkin/${f.filename}`)
-              .then((r) => r.text())
-              .then((text) => `# ${f.title}\n\n${text}`),
-          ),
-        );
-        setContent(texts.join('\n\n---\n\n'));
+    Promise.all([
+      fetch('/regras-munchkin/manifest.json').then((r) => r.json() as Promise<Manifest>),
+      fetch('/regras-munchkin/texts.json').then((r) => r.json() as Promise<Record<string, string>>),
+    ])
+      .then(([m, texts]) => {
+        const sorted = [...m.files].sort((a, b) => parseFloat(a.number) - parseFloat(b.number));
+        setManifest(sorted);
+        setDocs(sorted.map((f) => ({ number: f.number, title: f.title, text: texts[f.id] ?? '' })));
       })
-      .catch(() => {
-        setContent(
-          '# Erro ao carregar regras\n\nNão foi possível carregar os arquivos de regras.\n\nVerifique se a pasta `apps/web/public/regras-munchkin/` existe e contém um `manifest.json` válido.',
-        );
-      })
-      .finally(() => setLoading(false));
+      .catch(() => setManifestError(true))
+      .finally(() => setManifestLoading(false));
   }, []);
 
   useEffect(() => {
-    if (!query.trim()) { setMatchCount(0); setMatchIndex(0); return; }
-    const matches = content.match(new RegExp(escapeRegex(query), 'gi'));
-    setMatchCount(matches?.length ?? 0);
+    if (!query.trim() || !docs) {
+      setMatchCount(0);
+      setMatchIndex(0);
+      return;
+    }
+    const total = docs.reduce(
+      (sum, d) => sum + countMatches(d.title, query, accentSensitive) + countMatches(d.text, query, accentSensitive),
+      0,
+    );
+    setMatchCount(total);
     setMatchIndex(0);
-  }, [query, content]);
+  }, [query, docs, accentSensitive]);
 
   useEffect(() => {
     if (!containerRef.current || !query.trim() || matchCount === 0) return;
@@ -85,86 +138,38 @@ export default function RulesPage() {
   const nextMatch = () => setMatchIndex((i) => (i + 1) % matchCount);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') { e.preventDefault(); if (e.shiftKey) prevMatch(); else nextMatch(); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) prevMatch();
+      else nextMatch();
+    }
   };
 
-  const renderContent = () => {
-    const lines = content.split('\n');
-    return lines.map((line, idx) => {
-      if (line.trim() === '---') {
-        return <hr key={idx} className="border-parchment-dim/30 my-4" />;
-      }
-      if (!line.trim()) {
-        return <div key={idx} className="h-2" />;
-      }
+  const renderParts = (parts: TextPart[], key: string) =>
+    parts.map((p, i) =>
+      p.highlight ? (
+        <mark key={`${key}-${i}`} className="bg-brand-gold text-surface-base rounded px-0.5">
+          {p.text}
+        </mark>
+      ) : (
+        <React.Fragment key={`${key}-${i}`}>{p.text}</React.Fragment>
+      ),
+    );
 
-      const isH1 = line.startsWith('# ');
-      const isH2 = line.startsWith('## ');
-      const isH3 = line.startsWith('### ');
-      const rawText = line.replace(/^#{1,3}\s/, '');
-      const parts = splitHighlight(rawText, query);
-
-      const renderParts = (key: string) =>
-        parts.map((p, i) =>
-          p.highlight ? (
-            <mark key={`${key}-${i}`} className="bg-brand-gold text-surface-base rounded px-0.5">
-              {p.text}
-            </mark>
-          ) : (
-            p.text
-          ),
-        );
-
-      if (isH1) {
-        return (
-          <h2 key={idx} className="font-heading text-brand-gold text-xl mt-6 mb-2 leading-snug">
-            {renderParts(String(idx))}
-          </h2>
-        );
-      }
-      if (isH2) {
-        return (
-          <h3 key={idx} className="font-heading text-parchment text-base mt-4 mb-1 leading-snug">
-            {renderParts(String(idx))}
-          </h3>
-        );
-      }
-      if (isH3) {
-        return (
-          <h4 key={idx} className="font-heading text-parchment-muted text-sm mt-3 mb-1 leading-snug">
-            {renderParts(String(idx))}
-          </h4>
-        );
-      }
-
-      const isList = line.startsWith('- ') || line.startsWith('* ');
-      const listText = isList ? line.slice(2) : line;
-      const listParts = splitHighlight(listText, query);
-      const renderListParts = () =>
-        listParts.map((p, i) =>
-          p.highlight ? (
-            <mark key={i} className="bg-brand-gold text-surface-base rounded px-0.5">
-              {p.text}
-            </mark>
-          ) : (
-            p.text
-          ),
-        );
-
-      if (isList) {
-        return (
-          <p key={idx} className="font-body text-parchment leading-relaxed pl-4 before:content-['•'] before:mr-2 before:text-brand-gold-dark">
-            {renderListParts()}
+  const renderSearchContent = () => {
+    if (!docs) return null;
+    return docs.map((doc, docIdx) => (
+      <section key={docIdx} className="mb-6">
+        <h2 className="font-heading text-brand-gold text-xl mt-6 mb-2 leading-snug">
+          {doc.number}. {renderParts(splitHighlight(doc.title, query, accentSensitive), `t-${docIdx}`)}
+        </h2>
+        {doc.text.split('\n\n').map((page, pageIdx) => (
+          <p key={pageIdx} className="font-body text-parchment leading-relaxed mb-3 whitespace-pre-wrap">
+            {renderParts(splitHighlight(page, query, accentSensitive), `p-${docIdx}-${pageIdx}`)}
           </p>
-        );
-      }
-
-      return (
-        <p key={idx} className="font-body text-parchment leading-relaxed">
-          {renderParts(String(idx))}
-        </p>
-      );
-    });
+        ))}
+      </section>
+    ));
   };
 
   return (
@@ -175,7 +180,7 @@ export default function RulesPage() {
             onClick={() => navigate(-1)}
             className="font-heading text-parchment-muted hover:text-parchment transition-colors text-sm shrink-0"
           >
-            ← Voltar
+            {'←'} Voltar
           </button>
           <h1 className="font-heading text-brand-gold flex-1 text-center text-lg">
             Regras Munchkin
@@ -183,66 +188,141 @@ export default function RulesPage() {
           <div className="w-12 shrink-0" />
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center gap-2 bg-surface-card border border-parchment-dim/30 rounded-lg px-3 py-2 focus-within:border-brand-gold/60 transition-colors">
-            <span className="text-parchment-dim text-sm" aria-hidden>🔍</span>
-            <input
-              ref={searchInputRef}
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Buscar nas regras... (Enter para navegar)"
-              className="flex-1 bg-transparent font-body text-parchment placeholder-parchment-dim outline-none text-sm"
-            />
-            {query && (
-              <button
-                onClick={() => setQuery('')}
-                aria-label="Limpar busca"
-                className="text-parchment-dim hover:text-parchment text-xs px-1"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+        {/* Alternancia entre lista de PDFs e busca combinada */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setView('list')}
+            className={`flex-1 font-heading text-xs py-2 rounded-lg transition-colors ${
+              view === 'list'
+                ? 'bg-brand-gold text-surface-base'
+                : 'bg-surface-card text-parchment-muted hover:text-parchment'
+            }`}
+          >
+            {'\u{1F4C4}'} Ver PDFs originais
+          </button>
+          <button
+            onClick={() => setView('search')}
+            className={`flex-1 font-heading text-xs py-2 rounded-lg transition-colors ${
+              view === 'search'
+                ? 'bg-brand-gold text-surface-base'
+                : 'bg-surface-card text-parchment-muted hover:text-parchment'
+            }`}
+          >
+            {'\u{1F50D}'} Buscar em todas
+          </button>
+        </div>
 
-          {query.trim() && (
-            <div className="flex items-center gap-1 shrink-0">
-              {matchCount > 0 ? (
-                <>
-                  <span className="font-heading text-xs text-parchment-muted tabular-nums">
-                    {matchIndex + 1}/{matchCount}
-                  </span>
+        {view === 'search' && (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex items-center gap-2 bg-surface-card border border-parchment-dim/30 rounded-lg px-3 py-2 focus-within:border-brand-gold/60 transition-colors">
+                <span className="text-parchment-dim text-sm" aria-hidden>{'\u{1F50D}'}</span>
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Buscar nas regras... (Enter para navegar)"
+                  className="flex-1 bg-transparent font-body text-parchment placeholder-parchment-dim outline-none text-sm"
+                />
+                {query && (
                   <button
-                    onClick={prevMatch}
-                    aria-label="Resultado anterior"
-                    className="p-1 rounded text-parchment-muted hover:text-parchment hover:bg-surface-card transition-colors"
+                    onClick={() => setQuery('')}
+                    aria-label="Limpar busca"
+                    className="text-parchment-dim hover:text-parchment text-xs px-1"
                   >
-                    ↑
+                    {'✕'}
                   </button>
-                  <button
-                    onClick={nextMatch}
-                    aria-label="Próximo resultado"
-                    className="p-1 rounded text-parchment-muted hover:text-parchment hover:bg-surface-card transition-colors"
-                  >
-                    ↓
-                  </button>
-                </>
-              ) : (
-                <span className="font-heading text-xs text-parchment-dim">Nenhum resultado</span>
+                )}
+              </div>
+
+              {query.trim() && (
+                <div className="flex items-center gap-1 shrink-0">
+                  {matchCount > 0 ? (
+                    <>
+                      <span className="font-heading text-xs text-parchment-muted tabular-nums">
+                        {matchIndex + 1}/{matchCount}
+                      </span>
+                      <button
+                        onClick={prevMatch}
+                        aria-label="Resultado anterior"
+                        className="p-1 rounded text-parchment-muted hover:text-parchment hover:bg-surface-card transition-colors"
+                      >
+                        {'↑'}
+                      </button>
+                      <button
+                        onClick={nextMatch}
+                        aria-label="Proximo resultado"
+                        className="p-1 rounded text-parchment-muted hover:text-parchment hover:bg-surface-card transition-colors"
+                      >
+                        {'↓'}
+                      </button>
+                    </>
+                  ) : (
+                    <span className="font-heading text-xs text-parchment-dim">Nenhum resultado</span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+
+            <fieldset className="flex items-center gap-3 text-xs">
+              <legend className="font-heading text-parchment-dim mr-1">Considerar acentos na busca:</legend>
+              <label className="flex items-center gap-1 cursor-pointer font-body text-parchment-muted">
+                <input
+                  type="radio"
+                  name="accent-mode"
+                  checked={!accentSensitive}
+                  onChange={() => setAccentSensitive(false)}
+                  className="accent-brand-gold"
+                />
+                Nao (ex: &quot;epico&quot; encontra &quot;épico&quot;)
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer font-body text-parchment-muted">
+                <input
+                  type="radio"
+                  name="accent-mode"
+                  checked={accentSensitive}
+                  onChange={() => setAccentSensitive(true)}
+                  className="accent-brand-gold"
+                />
+                Sim
+              </label>
+            </fieldset>
+          </>
+        )}
       </header>
 
-      <div ref={containerRef} className="flex-1 px-4 py-4 space-y-1">
-        {loading ? (
+      <div ref={containerRef} className="flex-1 px-4 py-4">
+        {manifestLoading ? (
           <div className="flex items-center justify-center h-32">
             <div className="w-6 h-6 rounded-full border-2 border-brand-gold border-t-transparent animate-spin" />
           </div>
+        ) : manifestError ? (
+          <p className="font-body text-parchment-muted">
+            Nao foi possivel carregar a lista de regras. Verifique se a pasta{' '}
+            <code>apps/web/public/regras-munchkin/</code> contem um <code>manifest.json</code> valido.
+          </p>
+        ) : view === 'list' ? (
+          <div className="flex flex-col gap-2">
+            {manifest.map((f) => (
+              <a
+                key={f.id}
+                href={pdfUrl(f.filename)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 bg-surface-card rounded-xl px-4 py-3 hover:bg-surface-elevated transition-colors"
+              >
+                <span className="font-heading text-parchment text-sm flex items-center gap-2">
+                  <span className="text-brand-gold">{f.number}.</span>
+                  {f.title}
+                </span>
+                <span className="text-parchment-dim text-xs shrink-0">Abrir PDF {'↗'}</span>
+              </a>
+            ))}
+          </div>
         ) : (
-          renderContent()
+          renderSearchContent()
         )}
       </div>
     </div>

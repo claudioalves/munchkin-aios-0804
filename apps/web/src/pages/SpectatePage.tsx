@@ -5,9 +5,14 @@ import type { GamePlayerWithInfo, SortMode } from '@munchkin/shared';
 import { supabase } from '@/lib/supabase';
 import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
 import { SortDropdown } from '@/components/SortDropdown/SortDropdown';
+import { GameTimer } from '@/components/GameTimer/GameTimer';
+import { DiceButton } from '@/components/DiceButton/DiceButton';
+import { NarratorButton } from '@/components/NarratorButton/NarratorButton';
+import { useTTS } from '@/hooks/useTTS';
 import { useRealtimeGame } from '@/hooks/useRealtimeGame';
 import { translations } from '@/i18n/translations';
 import type { Language } from '@/i18n/translations';
+import { NOTEBOOKLM_URL } from '@/lib/constants';
 
 function shuffleIds(ids: string[]): string[] {
   const arr = [...ids];
@@ -39,7 +44,8 @@ export default function SpectatePage() {
   }, []);
 
   // Sincroniza updates realtime com o estado local
-  const { gamePlayers } = useGameStore();
+  const { gamePlayers, isTransDungeonActive } = useGameStore();
+  const { isSupported, isSpeaking, speak, stop } = useTTS();
   useEffect(() => {
     if (gamePlayers.length > 0) setPlayers(gamePlayers);
   }, [gamePlayers]);
@@ -75,6 +81,20 @@ export default function SpectatePage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortMode]);
+
+  const handleNarrate = () => {
+    if (isSpeaking) { stop(); return; }
+    const sorted = [...players].sort((a, b) => b.level - a.level);
+    const text = sorted
+      .map((p) => {
+        if (isTransDungeonActive && p.female_name) {
+          return `${p.player.name} como ${p.female_name} nível ${p.level}`;
+        }
+        return `${p.player.name} nível ${p.level}`;
+      })
+      .join('. ');
+    speak(text);
+  };
 
   // t() local baseado no idioma do criador da partida
   const spectatorLang = ((game as { lang?: string } | null)?.lang as Language) ?? 'pt-BR';
@@ -184,9 +204,51 @@ export default function SpectatePage() {
           victoryLevel={game.victory_level}
           sortMode={sortMode}
           isOwner={false}
+          isTransActive={isTransDungeonActive}
           onLevelChange={() => undefined}
           viewMode={viewMode}
         />
+      </div>
+
+      {/* Barra de informações: timer + acesso rápido */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <GameTimer startedAt={game.started_at} />
+        <div className="flex items-center gap-2 ml-auto">
+          <a
+            href="/rules"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Ver regras do Munchkin"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors"
+          >
+            <span aria-hidden>📖</span>
+            <span>Regras</span>
+          </a>
+          <a
+            href={NOTEBOOKLM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Abrir NotebookLM das regras"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors"
+          >
+            <span aria-hidden>🎙</span>
+            <span>NotebookLM</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Barra de ações principais (70% Narrar, 30% Dado) */}
+      <div className="flex items-stretch gap-3 w-full">
+        <div className="w-[70%]">
+          <NarratorButton
+            isSupported={isSupported}
+            isSpeaking={isSpeaking}
+            onClick={handleNarrate}
+          />
+        </div>
+        <div className="w-[30%]">
+          <DiceButton />
+        </div>
       </div>
     </div>
   );

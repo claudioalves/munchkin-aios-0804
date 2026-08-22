@@ -1,9 +1,14 @@
 {
   "files": [
-    {
-      "id": "placeholder",
-      "title": "Como usar este visualizador",
-      "filename": "placeholder.md"
-    }
+    { "id": "01", "number": "1", "title": "Base", "filename": "1 - Base.pdf" },
+    { "id": "01b", "number": "1.1", "title": "Épico e Derivados", "filename": "1.1 - Épico e Derivados.pdf" },
+    { "id": "04", "number": "4", "title": "Montaria Arredia", "filename": "4 - Montaria Arredia.pdf" },
+    { "id": "05", "number": "5", "title": "In-Domável", "filename": "5 - In-Domável.pdf" },
+    { "id": "06", "number": "6", "title": "Dungeon Demente", "filename": "6 - Dungeon Demente.pdf" },
+    { "id": "07", "number": "7", "title": "Trapaça com Duas Mãos", "filename": "7 - Trapaça com Duas Mãos.pdf" },
+    { "id": "08", "number": "8", "title": "Centauros e Homens-Lagartos", "filename": "8 - Centauros e Homens-Lagartos.pdf" },
+    { "id": "09", "number": "9", "title": "Jurássico Sarcástico", "filename": "9 - Jurássico Sarcástico.pdf" },
+    { "id": "10", "number": "10", "title": "Torções Temporais", "filename": "10 - Torções Temporais.pdf" },
+    { "id": "11", "number": "11", "title": "Tumbas Terríveis", "filename": "11 - Tumbas Terríveis.pdf" }
   ]
 }

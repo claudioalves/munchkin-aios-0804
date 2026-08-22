@@ -10,7 +10,8 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "extract-pdf-text": "node scripts/extract-pdf-text.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -34,6 +35,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
     "jsdom": "^25.0.0",
+    "pdfjs-dist": "^4.10.38",
     "tailwindcss": "^4.0.0",
     "vite": "^6.0.0",
     "vite-plugin-pwa": "^1.2.0",
