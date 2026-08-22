@@ -14,6 +14,20 @@ import type { GamePlayerWithInfo, SortMode } from '@munchkin/shared';
 import { PlayerCard } from '@/components/PlayerCard/PlayerCard';
 import { LevelButton } from '@/components/LevelButton/LevelButton';
 
+const RANK_COLOR_CLASS: Record<number, string> = {
+  1: 'text-brand-gold',
+  2: 'text-parchment',
+  3: 'text-amber-600',
+};
+
+function computeRankById(gamePlayers: GamePlayerWithInfo[]): Map<string, number> {
+  const rankById = new Map<string, number>();
+  [...gamePlayers]
+    .sort((a, b) => b.level - a.level)
+    .forEach((p, i) => rankById.set(p.id, i + 1));
+  return rankById;
+}
+
 interface PlayerGridProps {
   gamePlayers: GamePlayerWithInfo[];
   maxLevel: number;
@@ -31,6 +45,7 @@ interface SortableCardProps {
   gp: GamePlayerWithInfo;
   index: number;
   maxLevel: number;
+  rank: number;
   isLeader: boolean;
   isVictory: boolean;
   isOwner: boolean;
@@ -39,7 +54,7 @@ interface SortableCardProps {
   onPlayerClick?: ((gamePlayerId: string) => void) | undefined;
 }
 
-function SortableCard({ gp, index, maxLevel, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick }: SortableCardProps) {
+function SortableCard({ gp, index, maxLevel, rank, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: gp.id,
   });
@@ -65,6 +80,7 @@ function SortableCard({ gp, index, maxLevel, isLeader, isVictory, isOwner, isTra
         color={gp.player.color}
         level={gp.level}
         maxLevel={maxLevel}
+        rank={rank}
         isLeader={isLeader}
         isVictory={isVictory}
         isOwner={isOwner}
@@ -81,6 +97,7 @@ interface SortableListItemProps {
   index: number;
   maxLevel: number;
   victoryLevel: number;
+  rank: number;
   isLeader: boolean;
   isVictory: boolean;
   isOwner: boolean;
@@ -89,7 +106,7 @@ interface SortableListItemProps {
   onPlayerClick?: ((gamePlayerId: string) => void) | undefined;
 }
 
-function ListItem({ gp, index, maxLevel, victoryLevel, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick }: SortableListItemProps) {
+function ListItem({ gp, index, maxLevel, victoryLevel, rank, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick }: SortableListItemProps) {
   const ringClass = isVictory
     ? 'ring-2 ring-brand-emerald'
     : isLeader
@@ -103,6 +120,9 @@ function ListItem({ gp, index, maxLevel, victoryLevel, isLeader, isVictory, isOw
       className={`flex items-center gap-3 bg-surface-card rounded-xl px-4 py-3 animate-card-enter ${ringClass}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
+      <span className={`font-display font-black text-6xl leading-none flex-shrink-0 w-16 text-center ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}>
+        {rank}º
+      </span>
       <div
         className="w-4 h-4 rounded-full flex-shrink-0"
         style={{ backgroundColor: gp.player.color }}
@@ -186,6 +206,7 @@ export function PlayerGrid({
   const [activeId, setActiveId] = useState<string | null>(null);
   const maxLevelInGame = Math.max(...gamePlayers.map((p) => p.level), 0);
   const activePlayer = activeId ? gamePlayers.find((p) => p.id === activeId) : null;
+  const rankById = computeRankById(gamePlayers);
 
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: isOwner ? 8 : 999999 },
@@ -222,6 +243,7 @@ export function PlayerGrid({
                 index={index}
                 maxLevel={maxLevel}
                 victoryLevel={victoryLevel}
+                rank={rankById.get(gp.id) ?? index + 1}
                 isLeader={isLeader}
                 isVictory={isVictory}
                 isOwner={isOwner}
@@ -239,6 +261,7 @@ export function PlayerGrid({
               index={index}
               maxLevel={maxLevel}
               victoryLevel={victoryLevel}
+              rank={rankById.get(gp.id) ?? index + 1}
               isLeader={isLeader}
               isVictory={isVictory}
               isOwner={isOwner}
@@ -280,6 +303,7 @@ export function PlayerGrid({
                 index={0}
                 maxLevel={maxLevel}
                 victoryLevel={victoryLevel}
+                rank={rankById.get(activePlayer.id) ?? 1}
                 isLeader={false}
                 isVictory={false}
                 isOwner={false}
@@ -313,6 +337,7 @@ export function PlayerGrid({
               gp={gp}
               index={index}
               maxLevel={maxLevel}
+              rank={rankById.get(gp.id) ?? index + 1}
               isLeader={isLeader}
               isVictory={isVictory}
               isOwner={isOwner}
@@ -337,6 +362,7 @@ export function PlayerGrid({
               color={gp.player.color}
               level={gp.level}
               maxLevel={maxLevel}
+              rank={rankById.get(gp.id) ?? index + 1}
               isLeader={isLeader}
               isVictory={isVictory}
               isOwner={isOwner}
@@ -380,6 +406,7 @@ export function PlayerGrid({
               color={activePlayer.player.color}
               level={activePlayer.level}
               maxLevel={maxLevel}
+              rank={rankById.get(activePlayer.id) ?? 1}
               isLeader={false}
               isVictory={false}
               onIncrement={() => undefined}

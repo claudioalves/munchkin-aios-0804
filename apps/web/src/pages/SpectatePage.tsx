@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGameStore, getGameById } from '@munchkin/shared';
-import type { GamePlayerWithInfo } from '@munchkin/shared';
+import type { GamePlayerWithInfo, SortMode } from '@munchkin/shared';
 import { supabase } from '@/lib/supabase';
 import { PlayerGrid } from '@/components/PlayerGrid/PlayerGrid';
+import { SortDropdown } from '@/components/SortDropdown/SortDropdown';
 import { useRealtimeGame } from '@/hooks/useRealtimeGame';
 import { translations } from '@/i18n/translations';
 import type { Language } from '@/i18n/translations';
+
+function shuffleIds(ids: string[]): string[] {
+  const arr = [...ids];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = arr[i] as string;
+    arr[i] = arr[j] as string;
+    arr[j] = tmp;
+  }
+  return arr;
+}
 
 export default function SpectatePage() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -16,6 +28,8 @@ export default function SpectatePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortMode, setSortMode] = useState<SortMode>('level-desc');
+  const [randomOrder, setRandomOrder] = useState<string[]>([]);
 
   useRealtimeGame(supabase, gameId ?? null);
 
@@ -54,6 +68,14 @@ export default function SpectatePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
+  // Embaralhar quando sortMode muda para 'random'
+  useEffect(() => {
+    if (sortMode === 'random' && players.length > 0) {
+      setRandomOrder(shuffleIds(players.map((p) => p.id)));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortMode]);
+
   // t() local baseado no idioma do criador da partida
   const spectatorLang = ((game as { lang?: string } | null)?.lang as Language) ?? 'pt-BR';
   const tSpectate = (key: string): string => {
@@ -87,6 +109,19 @@ export default function SpectatePage() {
 
   if (!game) return null;
 
+  // Ordem de exibição conforme o modo de visualização escolhido (mesmas opções do modo logado)
+  const displayedPlayers = (() => {
+    if (sortMode === 'level-desc') {
+      return [...players].sort((a, b) => b.level - a.level);
+    }
+    if (sortMode === 'random' && randomOrder.length > 0) {
+      return randomOrder
+        .map((id) => players.find((p) => p.id === id))
+        .filter((p): p is GamePlayerWithInfo => p !== undefined);
+    }
+    return players;
+  })();
+
   return (
     <div className="min-h-screen bg-surface-base flex flex-col p-4 gap-4 max-w-2xl mx-auto">
       {/* Header */}
@@ -112,8 +147,11 @@ export default function SpectatePage() {
         <span>{tSpectate('game.spectator')}</span>
       </div>
 
-      {/* Toggle grid/lista */}
-      <div className="flex justify-end gap-2">
+      {/* Opções de visualização — mesmas do modo logado (ordenação + grade/lista) */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <SortDropdown sortMode={sortMode} onSortChange={setSortMode} />
+        </div>
         <button
           onClick={() => setViewMode('grid')}
           aria-label="Mudar para grade"
@@ -141,10 +179,10 @@ export default function SpectatePage() {
       {/* Grid somente leitura */}
       <div className="flex-1">
         <PlayerGrid
-          gamePlayers={players}
+          gamePlayers={displayedPlayers}
           maxLevel={game.max_level}
           victoryLevel={game.victory_level}
-          sortMode="level-desc"
+          sortMode={sortMode}
           isOwner={false}
           onLevelChange={() => undefined}
           viewMode={viewMode}

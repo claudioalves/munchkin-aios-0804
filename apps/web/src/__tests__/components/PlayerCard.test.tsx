@@ -9,6 +9,7 @@ const defaultProps = {
   color: '#ff0000',
   level: 3,
   maxLevel: 10,
+  rank: 1,
   isLeader: false,
   isVictory: false,
   onIncrement: vi.fn(),
@@ -65,5 +66,10 @@ describe('PlayerCard', () => {
   it('não exibe badge de vitória quando !isVictory', () => {
     render(<PlayerCard {...defaultProps} />);
     expect(screen.queryByText(/Vitória/)).not.toBeInTheDocument();
+  });
+
+  it('exibe a posição do jogador antes do nome', () => {
+    render(<PlayerCard {...defaultProps} rank={2} />);
+    expect(screen.getByText('2º')).toBeInTheDocument();
   });
 });

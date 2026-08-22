@@ -28,11 +28,12 @@ export function PlayerGrid({
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     >
-      {sorted.map((gp) => (
+      {sorted.map((gp, index) => (
         <PlayerCard
           key={gp.id}
           gamePlayer={gp}
           maxLevel={maxLevel}
+          rank={index + 1}
           isVictory={gp.level >= victoryLevel}
           isOwner={isOwner}
           onIncrement={onIncrement}

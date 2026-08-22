@@ -6,15 +6,23 @@ import { HoldButton } from './HoldButton';
 interface PlayerCardProps {
   gamePlayer: GamePlayerWithInfo;
   maxLevel: number;
+  rank: number;
   isVictory: boolean;
   isOwner?: boolean;
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
 }
 
+const RANK_COLOR: Record<number, string> = {
+  1: colors.brandGold,
+  2: colors.brandText,
+  3: '#cd7f32',
+};
+
 export function PlayerCard({
   gamePlayer,
   maxLevel,
+  rank,
   isVictory,
   isOwner = true,
   onIncrement,
@@ -23,6 +31,7 @@ export function PlayerCard({
   const { id, level, player } = gamePlayer;
   const atMin = !isOwner || level <= 1;
   const atMax = !isOwner || level >= maxLevel || isVictory;
+  const rankColor = RANK_COLOR[rank] ?? colors.brandMuted;
 
   return (
     <View
@@ -40,9 +49,12 @@ export function PlayerCard({
 
       <View style={styles.row}>
         <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>
-            {player.name}
-          </Text>
+          <View style={styles.nameRow}>
+            <Text style={[styles.rank, { color: rankColor }]}>{rank}º</Text>
+            <Text style={styles.name} numberOfLines={1}>
+              {player.name}
+            </Text>
+          </View>
           <Text style={styles.levelLabel}>Nível</Text>
         </View>
 
@@ -110,11 +122,21 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.md,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  rank: {
+    fontSize: fontSize.lg,
+    fontWeight: '900',
+  },
   name: {
     color: colors.brandText,
     fontSize: fontSize.md,
     fontWeight: '600',
     letterSpacing: 0.3,
+    flexShrink: 1,
   },
   levelLabel: {
     color: colors.brandMuted,
