@@ -60,7 +60,7 @@ export function PlayerCard({
         className="flex items-center gap-2 w-full justify-center text-left hover:opacity-85 transition-opacity cursor-pointer px-1 py-0.5 rounded-lg hover:bg-surface-elevated/50"
         title="Ver/Editar jogador na partida"
       >
-        <span className={`font-display font-black text-2xl leading-none flex-shrink-0 opacity-[0.90] ${rankColorClass}`}>
+        <span className={`font-display font-black text-2xl leading-none flex-shrink-0 opacity-[0.10] ${rankColorClass}`}>
           {rank}º
         </span>
         <span
