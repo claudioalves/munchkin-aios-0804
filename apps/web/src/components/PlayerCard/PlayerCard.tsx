@@ -1,4 +1,5 @@
 import { LevelButton } from '@/components/LevelButton/LevelButton';
+import { getRankOpacity } from '@/lib/rankOpacity';
 
 interface PlayerCardProps {
   gamePlayerId: string;
@@ -7,6 +8,7 @@ interface PlayerCardProps {
   level: number;
   maxLevel: number;
   rank: number;
+  totalPlayers: number;
   isLeader: boolean;
   isVictory: boolean;
   isOwner?: boolean | undefined;
@@ -30,6 +32,7 @@ export function PlayerCard({
   level,
   maxLevel,
   rank,
+  totalPlayers,
   isLeader,
   isVictory,
   isOwner = true,
@@ -41,6 +44,7 @@ export function PlayerCard({
 }: PlayerCardProps) {
   const nameToDisplay = isTransActive && femaleName ? `${name} - (${femaleName})` : name;
   const rankColorClass = RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted';
+  const rankOpacity = getRankOpacity(rank, totalPlayers);
 
   return (
     <div
@@ -60,7 +64,10 @@ export function PlayerCard({
         className="flex items-center gap-2 w-full justify-center text-left hover:opacity-85 transition-opacity cursor-pointer px-1 py-0.5 rounded-lg hover:bg-surface-elevated/50"
         title="Ver/Editar jogador na partida"
       >
-        <span className={`font-display font-black text-2xl leading-none flex-shrink-0 opacity-[0.10] ${rankColorClass}`}>
+        <span
+          className={`font-display font-black text-2xl leading-none flex-shrink-0 ${rankColorClass}`}
+          style={{ opacity: rankOpacity }}
+        >
           {rank}º
         </span>
         <span

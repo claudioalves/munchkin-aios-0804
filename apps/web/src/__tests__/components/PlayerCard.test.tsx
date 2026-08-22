@@ -10,6 +10,7 @@ const defaultProps = {
   level: 3,
   maxLevel: 10,
   rank: 1,
+  totalPlayers: 4,
   isLeader: false,
   isVictory: false,
   onIncrement: vi.fn(),
