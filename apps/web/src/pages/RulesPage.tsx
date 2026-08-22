@@ -80,6 +80,18 @@ function countMatches(text: string, query: string, accentSensitive: boolean): nu
 
 export default function RulesPage() {
   const navigate = useNavigate();
+
+  // Quando a pagina e aberta em nova aba (ex: botao "Regras" durante a partida),
+  // nao ha entrada anterior no historico dessa aba -- navigate(-1) nao faz nada.
+  const handleBack = () => {
+    const idx = (window.history.state as { idx?: number } | null)?.idx;
+    if (typeof idx === 'number' && idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   const [manifest, setManifest] = useState<RuleFile[]>([]);
   const [manifestLoading, setManifestLoading] = useState(true);
   const [manifestError, setManifestError] = useState(false);
@@ -177,7 +189,7 @@ export default function RulesPage() {
       <header className="sticky top-0 z-10 bg-surface-base/95 backdrop-blur border-b border-parchment-dim/20 px-4 py-3 flex flex-col gap-2">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="font-heading text-parchment-muted hover:text-parchment transition-colors text-sm shrink-0"
           >
             {'←'} Voltar
