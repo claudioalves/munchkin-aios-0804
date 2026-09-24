@@ -226,15 +226,15 @@ export default function GamePage() {
       </div>
 
       {/* Barra de informações: timer + acesso rápido */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1.5 flex-wrap">
         <GameTimer startedAt={activeGame.started_at} />
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-1.5 ml-auto">
           <a
             href="/rules"
             target="_blank"
             rel="noopener noreferrer"
             title="Ver regras do Munchkin"
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors flex-shrink-0"
           >
             <span aria-hidden>📖</span>
             <span>Regras</span>
@@ -244,7 +244,7 @@ export default function GamePage() {
             target="_blank"
             rel="noopener noreferrer"
             title="Abrir NotebookLM das regras"
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-surface-card border border-parchment-dim/30 hover:border-brand-gold/50 font-heading text-xs text-parchment-muted hover:text-parchment transition-colors flex-shrink-0"
           >
             <span aria-hidden>🎙</span>
             <span>NotebookLM</span>

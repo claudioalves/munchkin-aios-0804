@@ -32,7 +32,7 @@ export function GameTimer({ startedAt }: GameTimerProps) {
   }, [startedAt]);
 
   return (
-    <div className="flex items-center gap-4 px-3 py-2 rounded-lg bg-surface-card border border-parchment-dim/20 text-xs font-heading text-parchment-muted">
+    <div className="flex items-center gap-2 px-2 py-2 rounded-lg bg-surface-card border border-parchment-dim/20 text-xs font-heading text-parchment-muted flex-shrink-0">
       <span title="Hora de início">
         🕐 <span className="text-parchment">{formatStartTime(startedAt)}</span>
       </span>
