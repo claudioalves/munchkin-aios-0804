@@ -56,9 +56,9 @@ export function PlayerCard({
       className={`relative bg-surface-card rounded-xl p-4 flex flex-col items-center gap-3
         transition-all duration-300
         ${isVictory
-          ? 'ring-2 ring-brand-emerald shadow-glow-emerald'
+          ? 'ring-2 ring-brand-emerald ring-offset-2 ring-offset-surface-base shadow-glow-emerald'
           : isLeader
-          ? 'ring-2 ring-brand-gold animate-gold-pulse'
+          ? 'ring-2 ring-brand-gold ring-offset-2 ring-offset-surface-base animate-gold-pulse'
           : ''
         }`}
     >

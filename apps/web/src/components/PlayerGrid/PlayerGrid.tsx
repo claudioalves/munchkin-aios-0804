@@ -114,16 +114,16 @@ interface SortableListItemProps {
 
 function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick, dragHandle }: SortableListItemProps) {
   const ringClass = isVictory
-    ? 'ring-2 ring-brand-emerald'
+    ? 'ring-2 ring-brand-emerald ring-offset-2 ring-offset-surface-base'
     : isLeader
-    ? 'ring-2 ring-brand-gold'
+    ? 'ring-2 ring-brand-gold ring-offset-2 ring-offset-surface-base'
     : '';
 
   const nameToDisplay = isTransActive && gp.female_name ? `${gp.player.name} - (${gp.female_name})` : gp.player.name;
 
   return (
     <div
-      className={`flex items-center gap-2 bg-surface-card rounded-xl px-3 py-3 animate-card-enter ${ringClass}`}
+      className={`flex items-center gap-2 bg-surface-card rounded-xl pl-3 pr-4 py-3 animate-card-enter ${ringClass}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {dragHandle && (
