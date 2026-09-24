@@ -123,7 +123,7 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
 
   return (
     <div
-      className={`flex items-center gap-2 bg-surface-card rounded-xl pl-3 pr-4 py-3 animate-card-enter ${ringClass}`}
+      className={`flex items-center gap-2 bg-surface-card rounded-xl px-3 py-3 animate-card-enter ${ringClass}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {dragHandle && (
@@ -134,7 +134,7 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
         />
       )}
       <span
-        className={`font-display font-black text-4xl leading-none flex-shrink-0 w-12 text-center ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}
+        className={`font-display font-black text-3xl leading-none flex-shrink-0 w-10 text-center ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}
         style={{ opacity: getRankOpacity(rank, totalPlayers) }}
       >
         {rank}º
@@ -146,7 +146,7 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
       <button
         type="button"
         onClick={() => onPlayerClick?.(gp.id)}
-        className="font-heading text-parchment text-sm flex-shrink-0 w-28 truncate text-left hover:opacity-80 transition-opacity cursor-pointer"
+        className="font-heading text-parchment text-sm flex-shrink-0 w-24 truncate text-left hover:opacity-80 transition-opacity cursor-pointer"
         title="Ver/Editar jogador na partida"
       >
         {nameToDisplay}
@@ -160,8 +160,12 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
           }}
         />
       </div>
+      {/* flex-shrink-0 keeps this box locked at exactly w-12 for every row — without it,
+          the browser shrinks it down to each digit's own min-content width whenever the
+          row is tight on space, and since glyphs render at different widths per digit,
+          the +/- buttons that follow end up at a different X position on every row. */}
       <span
-        className="font-display text-5xl font-black leading-none w-12 text-right"
+        className="font-display text-5xl font-black leading-none flex-shrink-0 w-12 text-right"
         style={{ color: gp.player.color }}
       >
         {gp.level}
