@@ -7,12 +7,13 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
+import type { DragStartEvent, DragEndEvent, DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { GamePlayerWithInfo, SortMode } from '@munchkin/shared';
 import { PlayerCard } from '@/components/PlayerCard/PlayerCard';
 import { LevelButton } from '@/components/LevelButton/LevelButton';
+import { GripHandle } from '@/components/GripHandle/GripHandle';
 import { getRankOpacity } from '@/lib/rankOpacity';
 
 const RANK_COLOR_CLASS: Record<number, string> = {
@@ -71,8 +72,6 @@ function SortableCard({ gp, index, maxLevel, rank, totalPlayers, isLeader, isVic
         animationDelay: `${index * 60}ms`,
       }}
       className="animate-card-enter"
-      {...attributes}
-      {...listeners}
     >
       <PlayerCard
         gamePlayerId={gp.id}
@@ -90,6 +89,7 @@ function SortableCard({ gp, index, maxLevel, rank, totalPlayers, isLeader, isVic
         onIncrement={(id) => onLevelChange(id, gp.level, 1)}
         onDecrement={(id) => onLevelChange(id, gp.level, -1)}
         onPlayerClick={onPlayerClick}
+        dragHandle={{ attributes, listeners }}
       />
     </div>
   );
@@ -108,9 +108,11 @@ interface SortableListItemProps {
   isTransActive?: boolean | undefined;
   onLevelChange: (gamePlayerId: string, currentLevel: number, delta: 1 | -1) => void;
   onPlayerClick?: ((gamePlayerId: string) => void) | undefined;
+  /** When set, renders a drag grip on the left — only this handle initiates reordering. */
+  dragHandle?: { attributes: DraggableAttributes; listeners: DraggableSyntheticListeners } | undefined;
 }
 
-function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick }: SortableListItemProps) {
+function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLeader, isVictory, isOwner, isTransActive, onLevelChange, onPlayerClick, dragHandle }: SortableListItemProps) {
   const ringClass = isVictory
     ? 'ring-2 ring-brand-emerald'
     : isLeader
@@ -124,6 +126,13 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
       className={`flex items-center gap-2 bg-surface-card rounded-xl px-3 py-3 animate-card-enter ${ringClass}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
+      {dragHandle && (
+        <GripHandle
+          attributes={dragHandle.attributes}
+          listeners={dragHandle.listeners}
+          aria-label={`Arrastar para reordenar ${gp.player.name}`}
+        />
+      )}
       <span
         className={`font-display font-black text-4xl leading-none flex-shrink-0 w-12 text-center ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}
         style={{ opacity: getRankOpacity(rank, totalPlayers) }}
@@ -192,10 +201,8 @@ function SortableListItem(props: SortableListItemProps) {
         transition,
         opacity: isDragging ? 0 : 1,
       }}
-      {...attributes}
-      {...listeners}
     >
-      <ListItem {...props} />
+      <ListItem {...props} dragHandle={{ attributes, listeners }} />
     </div>
   );
 }

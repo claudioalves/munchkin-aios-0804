@@ -1,4 +1,6 @@
+import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
 import { LevelButton } from '@/components/LevelButton/LevelButton';
+import { GripHandle } from '@/components/GripHandle/GripHandle';
 import { getRankOpacity } from '@/lib/rankOpacity';
 
 interface PlayerCardProps {
@@ -17,6 +19,8 @@ interface PlayerCardProps {
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
   onPlayerClick?: ((id: string) => void) | undefined;
+  /** When set, renders a drag grip in the top-left corner — only this handle initiates reordering. */
+  dragHandle?: { attributes: DraggableAttributes; listeners: DraggableSyntheticListeners } | undefined;
 }
 
 const RANK_COLOR_CLASS: Record<number, string> = {
@@ -41,6 +45,7 @@ export function PlayerCard({
   onIncrement,
   onDecrement,
   onPlayerClick,
+  dragHandle,
 }: PlayerCardProps) {
   const nameToDisplay = isTransActive && femaleName ? `${name} - (${femaleName})` : name;
   const rankColorClass = RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted';
@@ -48,7 +53,7 @@ export function PlayerCard({
 
   return (
     <div
-      className={`bg-surface-card rounded-xl p-4 flex flex-col items-center gap-3
+      className={`relative bg-surface-card rounded-xl p-4 flex flex-col items-center gap-3
         transition-all duration-300
         ${isVictory
           ? 'ring-2 ring-brand-emerald shadow-glow-emerald'
@@ -57,6 +62,15 @@ export function PlayerCard({
           : ''
         }`}
     >
+      {dragHandle && (
+        <GripHandle
+          attributes={dragHandle.attributes}
+          listeners={dragHandle.listeners}
+          aria-label={`Arrastar para reordenar ${name}`}
+          className="absolute top-2 left-2"
+        />
+      )}
+
       {/* Avatar + nome */}
       <button
         type="button"
