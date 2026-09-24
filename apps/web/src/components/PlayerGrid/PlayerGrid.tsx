@@ -121,11 +121,11 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
 
   return (
     <div
-      className={`flex items-center gap-3 bg-surface-card rounded-xl px-4 py-3 animate-card-enter ${ringClass}`}
+      className={`flex items-center gap-2 bg-surface-card rounded-xl px-3 py-3 animate-card-enter ${ringClass}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <span
-        className={`font-display font-black text-5xl leading-none flex-shrink-0 w-16 text-center ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}
+        className={`font-display font-black text-4xl leading-none flex-shrink-0 w-12 text-center ${RANK_COLOR_CLASS[rank] ?? 'text-parchment-muted'}`}
         style={{ opacity: getRankOpacity(rank, totalPlayers) }}
       >
         {rank}º
@@ -137,7 +137,7 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
       <button
         type="button"
         onClick={() => onPlayerClick?.(gp.id)}
-        className="font-heading text-parchment text-sm flex-shrink-0 w-36 truncate text-left hover:opacity-80 transition-opacity cursor-pointer"
+        className="font-heading text-parchment text-sm flex-shrink-0 w-28 truncate text-left hover:opacity-80 transition-opacity cursor-pointer"
         title="Ver/Editar jogador na partida"
       >
         {nameToDisplay}
@@ -152,7 +152,7 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
         />
       </div>
       <span
-        className="font-display text-6xl font-black leading-none w-16 text-right"
+        className="font-display text-5xl font-black leading-none w-12 text-right"
         style={{ color: gp.player.color }}
       >
         {gp.level}
@@ -161,12 +161,14 @@ function ListItem({ gp, index, maxLevel, victoryLevel, rank, totalPlayers, isLea
         <>
           <LevelButton
             variant="decrement"
+            layout="fixed"
             disabled={gp.level <= 1}
             onClick={() => onLevelChange(gp.id, gp.level, -1)}
             aria-label={`Diminuir nível de ${gp.player.name}`}
           />
           <LevelButton
             variant="increment"
+            layout="fixed"
             disabled={gp.level >= victoryLevel}
             onClick={() => onLevelChange(gp.id, gp.level, 1)}
             aria-label={`Aumentar nível de ${gp.player.name}`}
