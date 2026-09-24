@@ -24,7 +24,7 @@ export function LevelButton({
   const isIncrement = variant === 'increment';
   const sizeClasses =
     layout === 'fixed'
-      ? 'flex-shrink-0 w-[53px] h-[53px]'
+      ? 'flex-shrink-0 w-12 h-12'
       : 'flex-1 h-16';
 
   return (
